@@ -1,0 +1,80 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1021 - Display all the data of an application" Sequence Diagram
+
+'hide footbox
+actor "Customer Manager" as CM
+participant ":DisplayJobApplicationDataUI" as UI <<presentation>>
+control "DisplayJobApplicationDataController" as CTRL <<application>>
+participant ":JobOpeningRepository" as JOR <<repository>>
+participant ":JobApplicationRepository" as JAR <<repository>>
+
+
+activate CM
+
+    CM -> UI : asks to display all the data of an application.
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+        UI -> CTRL : findAllJobOpenings()
+        activate CTRL
+
+
+    CTRL -> JOR : allActiveJobOpeningsByCustomerManager(currentUser)
+    activate JOR
+
+    JOR --> CTRL :jobOpeningsWithInterview
+    deactivate JOR
+
+            CTRL --> UI : jobOpeningsWithInterview
+        deactivate CTRL
+
+
+        UI --> CM : shows list of all the job openings and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a Job Opening
+    activate UI
+
+ UI -> CTRL : findJobApplicationsByJobOpening(selectedJobOpening)
+ activate CTRL
+
+    CTRL -> JAR : findByJobOpening(selectedJobOpening)
+    activate JAR
+
+    JAR --> CTRL :jobApplications
+    deactivate JAR
+
+            CTRL --> UI : jobApplications
+        deactivate CTRL
+
+
+
+
+        UI --> CM : shows all the job applications for\n the selected job opening and asks you to select one
+
+    deactivate UI
+
+
+    CM -> UI : selects a Job Application
+    activate UI
+
+
+        UI --> CM : shows all the data of the selected job application
+
+    deactivate UI
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

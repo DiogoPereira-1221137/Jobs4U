@@ -1,0 +1,173 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+
+package "Customer Aggregate"{
+    class "«entity»\n«root»\nCustomer" as Customer{
+
+    }
+
+class SystemUser{
+}
+
+    class "Name" as Name1 {
+        firstName
+        lastName
+    }
+     class "«value object»\nE-Mail" as EMail1{
+     }
+
+     class "«value object»\nAddress" as Address2{
+            Street
+            City
+            State
+            Country
+            Zipcode
+     }
+
+     class "«value object»\nCode" as Code{
+     }
+
+}
+
+package "Job Opening Aggregate"{
+
+    class "«entity»\nRecruitmentProcess" as RecruitmentProcess{
+        HasInterviewPhase
+    }
+
+     class "«entity»\nPhase" as Phase{
+         description
+         beginDate
+         finalDate
+ }
+
+ class "«value object»\nInterviewPhaseStatus" as InterviewPhaseStatus{
+    }
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+
+    }
+
+    class "«value object»\nSetupStatus" as SetupStatus {
+    }
+
+    class "«value object»\nRequirementsStatus" as  RequirementsStatus{
+    }
+
+
+
+     class "«value object»\nContractType" as ContractType{
+     }
+
+    class "«value object»\nMode" as Mode{
+        description
+    }
+
+    class "«value object»\nJobFunction" as JobFunction{
+         description
+    }
+
+    class "«value object»\n NumberOfVacancies" as  NumberOfVacancies{
+
+    }
+
+    class "«value object»\nDescription" as Description{
+         description
+    }
+
+
+    class "«value object»\nAddress" as Address1{
+        Street
+        City
+        State
+        Country
+        Zipcode
+    }
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+}
+
+
+package "Candidate Aggregate"{
+    class "«root»\n«entity»\nCandidate" as Candidate{
+
+    }
+    note as EmailCandidate
+                      Identifire
+                     end note
+
+
+    class "Name" as Name {
+        firstName
+        lastName
+    }
+
+    class "«value object»\nPhoneNumber" as PhoneNumber{
+    phoneNumber
+    }
+
+     class "«value object»\nE-Mail" as EMail{
+     email
+     }
+
+}
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class "«value object»\nStatus" as Status{
+    }
+
+
+
+    class "«value object»\nCurriculum" as Curriculum{
+    }
+
+
+    class "«value object»\n«calculated»\nGrade" as Grade2{}
+
+}
+
+
+JobApplication"1"-->"1" Curriculum : includes
+JobApplication --> "0..1" Grade2 : includes
+JobApplication "1"-->"1" Status : has
+JobApplication "1" -> "1" Candidate :refers to
+
+JobOpening "1"<--"*" JobApplication : refers to
+
+EmailCandidate.EMail
+
+Candidate "1"-->"1" EMail :identified by
+PhoneNumber "1"<-"1" Candidate :has
+Candidate"1" --> "1" Name : has
+JobApplication "1" -> "1" Candidate :refers to
+
+Candidate "1"..>"1" UserDomain
+
+Customer "1"-->"1" EMail1 : has an
+
+Address2 <-- Customer : has an
+
+Customer --> Code : identified by
+Customer --> Name1 : has
+Customer --> SystemUser : managed by
+Mode "1" <-- "1"JobOpening : includes
+JobFunction "1" <-- "1"JobOpening : includes
+NumberOfVacancies "1" <-- "1"JobOpening : includes
+Description "1" <-- "1"JobOpening : includes
+Address1"1" <-- "1"JobOpening : includes
+ContractType "1" <--"1" JobOpening : includes
+JobOpening "1"-->"1" JobReference : includes
+Customer "1"<---"1" JobOpening : includes
+JobOpening --> SetupStatus
+JobOpening --> RequirementsStatus
+JobOpening --> InterviewPhaseStatus
+RecruitmentProcess "1" *--"4..5" Phase :part of
+JobOpening "1" --> "1"RecruitmentProcess :includes
+@enduml

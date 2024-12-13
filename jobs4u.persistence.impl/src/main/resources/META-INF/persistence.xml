@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence">
+  <persistence-unit name="lapr4.jobs4u">
+    <!--
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    -->
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+    <class>eapli.framework.infrastructure.authz.domain.model.SystemUser</class>
+    <class>eapli.framework.infrastructure.authz.domain.model.Role</class>
+    <class>eapli.framework.infrastructure.authz.domain.model.RoleSet</class>
+    <class>eapli.framework.infrastructure.authz.domain.model.RoleAssignment</class>
+    <class>lapr4.jobs4u.candidatemanagement.domain.Candidate</class>
+    <class>lapr4.jobs4u.customer.domain.Customer</class>
+    <class>lapr4.jobs4u.candidatemanagement.domain.Plugin</class>
+    <class>lapr4.jobs4u.jobopening.domain.JobOpening</class>
+    <class>lapr4.jobs4u.jobApplication.domain.JobApplication</class>
+    <class>lapr4.jobs4u.jobopening.domain.RecruitmentProcess</class>
+    <class>lapr4.jobs4u.jobopening.domain.Phase</class>
+    <class>lapr4.jobs4u.jobopening.domain.ScreeningPhase</class>
+    <class>lapr4.jobs4u.jobopening.domain.ResultPhase</class>
+    <class>lapr4.jobs4u.jobopening.domain.AnalysisPhase</class>
+    <class>lapr4.jobs4u.jobopening.domain.ApplicationPhase</class>
+    <class>lapr4.jobs4u.jobopening.domain.InterviewPhase</class>
+    <class>lapr4.jobs4u.rank.domain.Rank</class>
+    <class>lapr4.jobs4u.interview.domain.Interview</class>
+    <class>lapr4.jobs4u.notification.domain.Notification</class>
+    <class>lapr4.jobs4u.jobApplication.domain.ApplicationFile</class>
+
+
+    <properties>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://localhost/~/jobs4u"/>
+<!--      <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:tcp://vs1255.dei.isep.ipp.pt:2225/jobs4u"/>-->
+
+      <property name="jakarta.persistence.jdbc.user" value="sa"/>
+      <property name="jakarta.persistence.jdbc.password" value=""/>
+      <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
+      <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+      <!-- <property name="eclipselink.logging.level" value="FINE"/> -->
+      <!-- <property name = "hibernate.show_sql" value = "true" /> -->
+      <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+
+    </properties>
+  </persistence-unit>
+</persistence>

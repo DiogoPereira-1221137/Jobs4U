@@ -1,0 +1,48 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package "Plugin Aggregate"{
+    class  "«root»\n«entity»\nPlugin" as Plugin{
+    }
+    class "«value object»\n«identifier»\nPluginIdentifier" as PlugID{
+    }
+    class "«value object»\nPluginType" as PlugType{
+    }
+    class "«value object»\nPluginMainClassName" as PlugClass{
+    }
+    class "«value object»\nJarFileName" as JarFile{
+    }
+    class "«value object»\nDescription" as PlugDesc{
+    }
+}
+
+
+package "Job Opening Aggregate"{
+
+
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+    }
+
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+}
+
+
+Plugin"1" -->"1" PlugClass : includes
+Plugin"1" -->"1" JarFile : includes
+Plugin "1"--> "1"PlugDesc : includes
+Plugin "1" --> "1" PlugID : identified by
+Plugin"1" --> "1" PlugType : has a
+Plugin "0..2" <-- "1" JobOpening : includes
+
+
+JobOpening "1"-->"1" JobReference : includes
+
+
+
+
+@enduml

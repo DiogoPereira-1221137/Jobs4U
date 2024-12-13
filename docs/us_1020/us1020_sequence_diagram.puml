@@ -1,0 +1,210 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 1020 - Publish the results of the selection of candidates for a job opening, so that candidates and customer are notified by email of the result." Sequence Diagram
+
+
+actor CustomerManager as Actor
+participant ":PublishResultsUI" as UI <<presentation>>
+control ":PublishResultsController" as CTRL <<application>>
+participant ":JobApplicationService" as Service <<service>>
+participant ":JobApplicationDTO" as DTO <<domain>>
+participant ":JobOpeningRepository" as JOR <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepository <<repository>>
+participant ":RankRepository" as RankRepository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+participant ":TCPServer" as Server <<System>>
+
+
+activate Actor
+
+    Actor -> UI : Asks to select a job Opening to publish the results
+        activate UI
+
+
+
+
+    UI-> CTRL** : create
+
+     UI-> CTRL : listAllJobOpenings()
+    activate CTRL
+
+
+        CTRL->JOR: findAll()
+        activate JOR
+        JOR-->CTRL: allJobOpenings
+        deactivate JOR
+        CTRL-->UI: allJobOpenings
+    deactivate CTRL
+
+
+        UI-->Actor : Shows the list of Job Openings and aks to select one to publish the results
+deactivate UI
+
+    alt jobOpeningSelected.currentPhase() == PhaseNames.ANALYSIS
+        Actor -> UI : Selects the job Opening
+    activate UI
+
+    UI-> CTRL : findCandidates(jobOpeningSelected)
+             activate CTRL
+
+                 CTRL -> Service: findByJobOpening(jobOpeningSelected)
+                 activate Service
+
+             Service -> JobApplicationRepository: findByJobOpening(jobOpeningSelected)
+              activate JobApplicationRepository
+
+            JobApplicationRepository -->  Service: jobApplicationsList
+             deactivate JobApplicationRepository
+
+             Service -> Service: transformToDTO(jobApplicationsList)
+
+                activate Service
+
+                Service -> DTO**: create()
+
+                Service --> Service: listJobApplicationsDTO
+                deactivate Service
+
+                Service --> CTRL: listJobApplicationsDTO
+
+
+                deactivate Service
+
+
+                 CTRL -->  UI: listJobApplicationsDTO
+
+                 deactivate CTRL
+
+
+
+                 UI -> CTRL: findRankByJobReference(jobOpeningSelected.jobReference())
+
+                 activate CTRL
+
+                 CTRL -> RankRepository: findByJobReference(jobReference)
+
+                 activate RankRepository
+
+                 RankRepository --> CTRL: rankSaved
+
+                 deactivate RankRepository
+
+                 CTRL --> UI: rankSavedList
+
+                 deactivate CTRL
+
+                 UI -> UI: publishResults = new ArrayList<>()
+
+
+                 loop for each JobApplicationDTO job in listJobApplicationsDTO
+                  UI -> UI: publishResults.set(rankSavedList.indexOf(job.identity()),job)
+
+                 end
+
+
+
+
+                 UI -> CTRL: publishResults( output, input, publishResults, vacancies, companyEmail, publisherEmail)
+                 activate CTRL
+
+                 CTRL -> SerializeUtil: serialize(publishResults)
+
+
+                      activate SerializeUtil
+
+                       SerializeUtil --> CTRL: publishResultsData
+
+                      deactivate SerializeUtil
+
+
+                  CTRL -> SerializeUtil: serialize(vacancies)
+
+
+                      activate SerializeUtil
+
+                       SerializeUtil --> CTRL: vacanciesData
+
+                      deactivate SerializeUtil
+
+                   CTRL -> SerializeUtil: serialize(companyEmail)
+
+
+                       activate SerializeUtil
+
+                        SerializeUtil --> CTRL: companyEmailData
+
+                       deactivate SerializeUtil
+
+                  CTRL -> SerializeUtil: serialize(publisherEmail)
+
+
+                      activate SerializeUtil
+
+                       SerializeUtil --> CTRL: publisherEmailData
+
+                      deactivate
+
+
+
+                      CTRL -> Server : (tcp) sendPublishReq
+
+
+                       activate Server
+                       Server--> CTRL : (tcp) sendPublishResp
+                      deactivate Server
+
+
+                      CTRL --> UI : success
+
+
+                      deactivate CTRL
+
+
+                      UI -> UI: jobOpeningSelected.setPhase(PhaseNames.RESULT);
+                      UI -> UI: jobOpeningSelected.closed();
+
+                      UI -> CTRL: storeJobOpening(jobOpeningSelected)
+
+                      activate CTRL
+
+                      CTRL -> JOR: save(jobOpeningSelected)
+
+                      CTRL -> UI : success
+
+                      deactivate CTRL
+
+
+
+
+
+
+
+
+'                UI->UI: transferRankingData(ranked, rankedSaveList,candidatesByJobOpening)
+'                activate UI
+'                UI->UI: ranked
+'
+'                deactivate UI
+
+
+
+
+
+
+
+'
+                       UI-->Actor: Shows operation success and displays \n a information of closing the jobOpening
+                     deactivate UI
+
+
+end
+
+
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+
+skinparam shadowing false
+
+'left to right direction
+
+
+
+package "Plugin Aggregate"{
+    class  "«root»\n«entity»\nPlugin" as Plugin{
+    }
+    class "«value object»\n«identifier»\nPluginIdentifier" as PlugID{
+    }
+    class "«value object»\nPluginType" as PlugType{
+    }
+    class "«value object»\nPluginMainClassName" as PlugClass{
+    }
+    class "«value object»\nJarFileName" as JarFile{
+    }
+    class "«value object»\nDescription" as PlugDesc{
+    }
+}
+
+
+
+
+
+
+Plugin"1" -->"1" PlugClass : includes
+Plugin"1" -->"1" JarFile : includes
+Plugin "1"--> "1"PlugDesc : includes
+Plugin "1" --> "1" PlugID : identified by
+Plugin"1" --> "1" PlugType : has a
+
+
+@enduml

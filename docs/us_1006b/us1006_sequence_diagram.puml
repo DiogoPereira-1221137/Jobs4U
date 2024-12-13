@@ -1,0 +1,100 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+'hide footbox
+actor "Customer Manager" as CM
+participant ":DisplayCandidateDataUI" as UI <<presentation>>
+control ":DisplayCandidateDataController" as CTRL <<application>>
+participant "AuthzRegistry" as AR <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant "PersistenceContext" as PC <<persistence>>
+participant ":RepositoryFactory" as RF <<persistence>>
+participant ":CandidateRepository" as CR <<repository>>
+participant ":JobApplicationRepository" as ApplicationRepo <<repository>>
+
+activate CM
+
+    CM -> UI : asks to display all the personal data of a candidate
+
+    activate UI
+
+       UI -> CTRL** : create
+
+
+               UI -> CTRL : allActiveCandidates()
+               activate CTRL
+               CTRL->AR : authorizationService()
+                          activate AR
+                          AR->AUTHS : create()
+
+
+                          AR-->CTRL : authz
+                          deactivate AR
+
+       CTRL->PC:repositories()
+                       activate PC
+                       PC->RF : candidates()
+
+
+                       activate RF
+                       RF->CR:create()
+
+
+                       RF --> PC : candidateRepository
+                       deactivate RF
+                       PC-->CTRL : candidateRepository
+                       deactivate PC
+           CTRL -> CR : findAllActive()
+           activate CR
+
+           CR --> CTRL :candidates
+           deactivate CR
+
+                   CTRL --> UI : candidates
+               deactivate CTRL
+
+
+
+
+               UI --> CM : shows list of all the candidates and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a candidate
+    activate UI
+        UI -> CTRL : getApplications(Candidate selectedCandidate)
+        activate CTRL
+        CTRL->PC:repositories()
+                               activate PC
+                               PC->RF : jobApplications()
+
+
+                               activate RF
+                               RF->ApplicationRepo:create()
+
+
+                               RF --> PC : jobApplicationRepository
+                               deactivate RF
+                               PC-->CTRL : jobApplicationRepository
+                               deactivate PC
+            CTRL -> ApplicationRepo : findByCandidate(selectedCandidate)
+            activate ApplicationRepo
+
+            ApplicationRepo --> CTRL :jobApplications
+            deactivate ApplicationRepo
+            CTRL --> UI : jobApplications
+            deactivate CTRL
+        UI --> CM : shows the selected candidate personal data including his/her applications
+
+    deactivate UI
+
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

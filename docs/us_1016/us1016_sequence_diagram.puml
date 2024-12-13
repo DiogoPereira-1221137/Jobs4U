@@ -1,0 +1,166 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1016 - I want the system to notify candidates,by email, of the result of the verification process" Sequence Diagram
+'hide footbox
+actor "Customer Manager" as CM
+participant ":ExecuteVerificationRequirementsJobOpeningUI" as UI <<presentation>>
+control ":ExecuteVerificationRequirementsJobOpeningController" as CTRL <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepository  <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepository  <<repository>>
+participant ":JobApplicationService" as SRV <<service>>
+participant ":JobApplicationDTO" as DTO <<domain>>
+participant "jarClass :jarClass" as JAR <<requirementsInterface>>
+participant ":JobApplication" as JobApplication <<domain>>
+participant ":ApplicationFile" as ApplicationFile <<domain>>
+participant ":Notification" as Notification <<domain>>
+participant ":NotificationRepository" as NotificationRepository  <<repository>>
+
+activate CM
+
+    CM -> UI : asks to verify the requirements for a job opening
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+        UI -> CTRL : allActiveJobOpeningsByCustomerManager()
+
+    activate CTRL
+               CTRL-> JobOpeningRepository : allActiveJobOpeningsByCustomerManager()
+
+               activate JobOpeningRepository
+
+               JobOpeningRepository--> CTRL : jobOpeningList
+
+               deactivate JobOpeningRepository
+
+               CTRL--> UI : jobOpeningList
+
+           deactivate CTRL
+
+
+
+
+        UI --> CM : shows list of all the job openings and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a job opening
+    activate UI
+
+        UI->CTRL : allWaitingApplicationsByJobOpening(jobOpeningSelected)
+        activate CTRL
+
+        CTRL-> JobApplicationRepository : allWaitingApplicationsByJobOpening(jobOpeningSelected))
+
+                activate JobApplicationRepository
+
+               JobApplicationRepository--> CTRL : jobApplicationsList
+
+               deactivate JobApplicationRepository
+
+               CTRL->UI: jobApplicationsList
+
+               deactivate CTRL
+
+        loop jobApplicationsList
+
+        UI->CTRL: filePathsRequirements(jobApplication)
+        activate CTRL
+
+        CTRL-> JobApplication : filePathsRequirements()
+
+        activate JobApplication
+        JobApplication--> CTRL: reqPaths
+        deactivate JobApplication
+
+         CTRL->UI: files
+
+        deactivate CTRL
+
+        alt reqPaths != 0
+        loop file
+
+        UI->CTRL: verifyRequirements(file, jobApplication, jobOpeningSelected)
+                activate CTRL
+
+                    CTRL -> JAR** : create
+                    CTRL -> JAR: verifyRequirements(file)
+                    activate JAR
+                    JAR --> CTRL : true
+                    deactivate JAR
+
+                    CTRL->JobApplication:ApproveApplication()
+
+                    CTRL-->UI : valid
+
+                    deactivate CTRL
+
+
+                    UI->CTRL: notifyCandidate(message, customerManagerEmail, jobOpeningSelected)
+                    activate CTRL
+
+                    CTRL->Notification : notification(candidateEmail, customerManagerEmail, title, subject , notificationMessage)
+
+                    activate Notification
+
+                    Notification-->CTRL : notification
+
+                    deactivate Notification
+
+
+                    CTRL->NotificationRepository : save(notification)
+
+
+                    CTRL-->UI: notificationMessage
+
+                    deactivate CTRL
+
+
+        end loop
+        end alt
+
+       end loop
+
+
+UI->CTRL : transformToDto(jobApplicationsList))
+        activate CTRL
+
+        CTRL-> SRV : transformToDto(jobApplicationsList))
+
+                activate SRV
+
+SRV -> DTO**: create()
+               SRV--> CTRL : jobApplicationsListDTO
+
+               deactivate SRV
+
+
+               CTRL->UI: listJobApplicationsDTO
+
+               deactivate CTRL
+
+        deactivate CTRL
+
+UI -> CTRL : notifyResultByEmail(output, input ,listJobApplicationsDTO, authz.session().get().authenticatedUser().email())
+activate CTRL
+
+CTRL --> UI : phase
+
+deactivate CTRL
+        UI --> CM : shows notificationMessage and Application info
+
+    deactivate UI
+
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

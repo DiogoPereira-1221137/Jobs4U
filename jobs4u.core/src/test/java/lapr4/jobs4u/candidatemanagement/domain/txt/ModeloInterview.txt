@@ -1,0 +1,26 @@
+True/False: Do you have previous experience in project management?
+True
+
+Short Text Answer: What is your most relevant professional experience for this position?
+Writing in all, going fast and run faster
+
+Choice, with Single-Answer: What is your proficiency level in Python?
+Inter
+
+Choice, with Multiple-Answer: What programming languages do you know?
+Python, Ruby, Java
+
+Integer Number: How many years of experience do you have in sales?
+1000
+
+Decimal Number: What is your level of fluency in English?
+16,4
+
+Date: What is the available start date to begin working?
+2/10/2020
+
+Time: At what time of day do you feel most productive?
+10:10
+
+Numeric Scale: On a scale how skilled do you consider yourself in solving problems creatively?
+4

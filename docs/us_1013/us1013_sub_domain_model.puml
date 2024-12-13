@@ -1,0 +1,155 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package "Rank Aggregate"{
+
+    class "«entity»\n«root»\nRank" as Rank{
+    }
+
+note as N6
+The identifier of the entity Rank
+is the JobReference(id) of the JobOpening
+end note
+
+}
+
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class "«value object»\nStatus" as Status{
+    }
+
+     class "«value object»\n«identifier»\nId" as ID{
+     }
+
+    class "«value object»\n«calculated»\nGrade" as Grade{}
+
+
+    class "«value object»\nApplicationFile" as ApplicationFile{
+    relativeFilePath
+    fileContent
+
+
+    }
+
+    class "«value object»\nType" as Type{
+    }
+}
+
+
+package "Job Opening Aggregate"{
+
+    class "«entity»\nRecruitmentProcess" as RecruitmentProcess{
+        HasInterviewPhase
+    }
+
+     class "«entity»\nPhase" as Phase{
+        phaseName
+        startDate
+        endDate
+     }
+
+    class "«value object»\nPhaseNames" as PhaseNames{
+
+    }
+
+
+ class "«entity»\nScreeningPhase" as ScreeningPhase{
+
+     }
+
+    class "«entity»\nResultPhase" as ResultPhase{
+    }
+
+    class "«entity»\nAnalysisPhase" as AnalysisPhase{
+
+    }
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+
+    }
+
+    class "«value object»\nJogOpeningStatus" as JogOpeningStatus {
+    }
+
+     class "«value object»\nContractType" as ContractType{
+     }
+
+    class "«value object»\nMode" as Mode{
+
+    }
+
+    class "«value object»\nJobFunction" as JobFunction{
+
+    }
+
+    class "«value object»\n NumberOfVacancies" as  NumberOfVacancies{
+
+    }
+
+    class "«value object»\nDescription" as Description{
+
+    }
+
+
+    class "«value object»\nAddress" as Address1{
+        Street
+        City
+        State
+        Country
+        Zipcode
+    }
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+    class  "«entity»\nInterviewPhase" as InterviewPhase{
+
+    }
+
+}
+
+N6 -- Rank
+
+Rank "1" --> "1" JobOpening : identified by
+
+
+JobApplication"1"-->"1" ID : identified by
+JobApplication --> "0..1" Grade : includes
+
+JobApplication "1" --> "1..*" ApplicationFile
+
+ Rank "1" --> "1..*" JobApplication : includes
+
+
+JobApplication "1"-->"1" Status : has
+ApplicationFile "1" --> "1" Type
+
+
+Mode "1" <-- "1"JobOpening : includes
+JobFunction "1" <-- "1"JobOpening : includes
+NumberOfVacancies "1" <-- "1"JobOpening : includes
+Description "1" <-- "1"JobOpening : includes
+Address1"1" <-- "1"JobOpening : includes
+ContractType "1" <--"1" JobOpening : includes
+
+
+JobOpening "1"-->"1" JobReference : identified by
+
+JobOpening "1"-->"1" JogOpeningStatus : includes
+JobOpening "1"<---"*"JobApplication : refers to
+JobOpening "1" --> "1"RecruitmentProcess :includes
+
+
+RecruitmentProcess "1" *--"4..5" Phase :part of
+RecruitmentProcess "1" -> "1" PhaseNames : includes
+
+ScreeningPhase --|> Phase
+ResultPhase --|> Phase
+InterviewPhase --|> Phase
+AnalysisPhase --|> Phase
+
+@enduml

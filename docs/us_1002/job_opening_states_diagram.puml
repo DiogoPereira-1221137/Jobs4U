@@ -1,0 +1,34 @@
+@startuml
+'https://plantuml.com/state-diagram
+
+left to right direction
+
+
+[*] --> Inactive : US1002 - Job opening created/registered
+
+state Inactive  {
+state  "In Specification" as IS
+
+state "Fully Specified" as FS
+
+
+IS --> FS : all data of US1007, 1009, 1011
+
+FS -->  IS : US1007
+
+IS --> IS : US1007, US1009, US1011
+
+    FS --> FS : US1007, US1009, US1011
+
+}
+
+state "Active" as ATV
+
+state  "Closed" as C
+
+FS --> ATV : Application Phase open
+
+ATV --> C : Result Phase closed
+
+C --> [*]
+@enduml

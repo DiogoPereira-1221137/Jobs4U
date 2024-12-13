@@ -1,0 +1,33 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+
+package "Candidate Aggregate"{
+    class "«root»\n«entity»\nCandidate" as Candidate{
+
+    }
+    note as EmailCandidate
+          Identifire
+         end note
+
+    class "Name" as Name2 {
+        firstName
+        lastName
+    }
+
+    class "«value object»\nPhoneNumber" as PhoneNumber{
+    }
+
+     class "«value object»\nE-Mail" as EMail2{
+     }
+
+}
+
+
+EmailCandidate.EMail2
+Candidate "1"-->"1" EMail2 :identified by
+PhoneNumber "1"<-"1" Candidate :has
+Candidate --> Name2 : has
+
+@enduml

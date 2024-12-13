@@ -1,0 +1,78 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US2000c- List all Candidates" Sequence Diagram
+'hide footbox
+actor "Operator" as O
+participant ":ListAllCandidatesUI" as UI <<presentation>>
+control ":ListAllCandidatesController" as CTRL <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant "PersistenceContext" as PC <<persistence>>
+participant ":RepositoryFactory" as RF <<persistence>>
+participant ":CandidateRepository" as CR <<repository>>
+
+activate O
+
+    O -> UI : Asks to list all candidates
+
+    activate UI
+
+        UI -> CTRL** : create
+        UI -> CTRL : allActiveCandidates()
+        activate CTRL
+
+ CTRL->AR : authorizationService()
+ activate AR
+ AR->AUTHS : create()
+
+
+                        AR-->CTRL : authz
+                        deactivate AR
+
+
+
+         CTRL->PC:repositories()
+                        activate PC
+                        PC->RF : create()
+                        PC->RF : candidates()
+
+
+                        activate RF
+                        RF->CR:create()
+
+
+                        RF --> PC : candidateRepository
+                        deactivate RF
+                        PC-->CTRL : candidateRepository
+                        deactivate PC
+
+
+
+
+
+        CTRL -> CR : findAllActive()
+        activate CR
+
+
+
+        CR --> CTRL :candidates
+        deactivate CR
+
+        CTRL --> UI :candidates
+        deactivate CTRL
+                deactivate RF
+        UI --> O : Shows the list of all candidates
+        deactivate UI
+
+
+
+
+    deactivate UI
+deactivate O
+
+@enduml

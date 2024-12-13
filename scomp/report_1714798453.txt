@@ -1,0 +1,11 @@
+../import/1/1-big-file-1.txt
+../import/1/1-candidate-data.txt
+../import/1/1-cv.txt
+../import/1/1-email.txt
+../import/1/1-report-1.txt
+../import/2/2-big-file1.txt
+../import/2/2-candidate-data.txt
+../import/2/2-cv.txt
+../import/2/2-email.txt
+../import/2/2-letter.txt
+../import/3/3-big-file-1.txt

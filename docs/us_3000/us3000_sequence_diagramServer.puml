@@ -1,0 +1,143 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3000 - As Candidate, I want to list all my applications and their state (including the number of applicants)." Sequence Diagram
+'hide footbox
+
+
+
+participant ":ClientHandler" as Server <<System>>
+control ":ListAllApplicationsReqController" as CTRL <<application>>
+participant ":AuthorizationService" as AuthorizationService <<service>>
+
+participant ":JobApplicationService" as Service <<service>>
+participant ":JobApplicationStateDTO" as DTO <<domain>>
+'participant ":JobApplicationRepository" as Repository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+participant ":JobApplicationRepository" as AR <<repository>>
+
+
+-> Server : (tcp) listAllApplicationsReq
+
+ Server->Server : listAllApplicationsReq(version, code, data)
+
+activate Server
+
+  Server->AuthorizationService : authenticatedUser().email()
+
+  activate AuthorizationService
+
+  AuthorizationService--> Server : email
+
+  deactivate AuthorizationService
+
+
+
+ Server->CTRL: listAllApplications(email)
+
+
+
+ activate CTRL
+
+
+  CTRL->Service : findJobApplicationsByCandidate(email)
+
+  activate Service
+
+'  Service->Repository : findByCandidate(candidate)
+'  activate Repository
+'
+'  Repository--> Service : jobApplicationsList
+'
+'  deactivate Repository
+'
+'  loop each jobApplications
+'
+'  Service-->Repository: getCandidatesNumberForJobOpening(jobOpening)
+'
+'    activate Repository
+'
+'    Repository-->Service: numberOfCandidates
+'
+'    deactivate Repository
+'
+'  Service-->DTO: create()
+'
+'    activate DTO
+'
+'    DTO-->Service: jobApplciationsDTO
+'
+'    deactivate DTO
+'
+'
+'
+'
+'  end loop
+'
+
+  Service-> AR: findByCandidate(email)
+  activate AR
+
+ AR-->Service: jobApplicationList
+
+  deactivate AR
+
+  loop each job application
+
+  Service-> AR: findByJobOpening(jobOpening)
+  activate AR
+
+ AR-->Service: jobApplications
+
+  deactivate AR
+
+
+  end loop
+
+  Service->Service : transformToDTO(jobApplicationNumberCandidates)
+  activate Service
+
+  Service-->DTO**: create()
+
+ Service-->Service : jobApplicationStateDTOList
+
+ deactivate Service
+ Service--> CTRL : jobApplicationStateDTOList
+
+  deactivate Service
+
+CTRL-->Server: jobApplicationStateDTOList
+
+ deactivate CTRL
+'
+' note right
+'  sugestão:
+'  1. aplicar typed queries
+'  2. "reporting" repositories
+' end note
+
+Server->SerializeUtil: serialize(jobApplicationStateDTOList)
+
+activate SerializeUtil
+
+SerializeUtil-->Server: listAllApplicationsResp
+
+deactivate SerializeUtil
+
+
+Server-->Server: listAllApplicationsResp(version, code, data)
+
+deactivate Server
+
+
+ <-- Server: (tcp) listAllApplicationsResp
+
+
+
+
+
+@enduml

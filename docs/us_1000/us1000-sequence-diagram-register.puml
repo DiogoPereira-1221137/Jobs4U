@@ -1,0 +1,109 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor Administrator as Actor
+participant ":AddUserUI" as UI <<presentation>>
+control ":AddUserController" as Controller <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant "PasswordGenerator" as Password <<application>>
+participant ":UserManagementService" as Service <<application>>
+participant "UserBuilder" as Builder <<builder>>
+participant "user:User" as Domain <<domain>>
+participant "PersistenceContext" as Persistence <<persistence>>
+participant ":RepositoryFactory" as RepositoryFactory <<persistence>>
+participant ":UserRepository" as Repository <<repository>>
+
+
+activate Actor
+    Actor -> UI : Ask to add a new User
+    activate UI
+    UI --> Actor: Ask User Information
+    deactivate UI
+    Actor -> UI: First Name, Last Name, E-mail
+    activate UI
+
+    loop option != 0
+
+    UI --> Actor: Show List of Roles Types
+    deactivate UI
+    Actor -> UI: Insert Role Type
+    activate UI
+
+    end loop
+
+     UI-> Controller** : create
+
+            UI -> Controller:  generatePassword()
+            activate Controller
+            Controller -> Password : generatePassword()
+            activate Password
+            Password --> Controller : password
+            deactivate Password
+
+            Controller --> UI: password
+            deactivate Controller
+
+
+    UI -> Controller: addUser(firstName, lastName, email,password.roles)
+            activate Controller
+
+            Controller->AR : authorizationService()
+             activate AR
+             AR->AUTHS : create()
+
+
+            AR-->Controller : authz
+            deactivate AR
+
+        Controller -> Service:registerNewUser(password, firstName, lastName, email, roles, createdOn);
+        activate Service
+
+        Service -> Builder : create
+
+        Service -> Builder:registerNewUser(password, firstName, lastName, email, roles, createdOn);
+        activate Builder
+
+        Builder -> Domain:build()
+
+        activate Domain
+        Domain -> Builder: user
+        deactivate Domain
+
+
+        Builder -> Service: user
+        deactivate Builder
+
+
+        Service->Persistence:repositories()
+        activate Persistence
+        Persistence->RepositoryFactory:deactiveUsers()
+        activate RepositoryFactory
+        RepositoryFactory->Repository:create()
+        RepositoryFactory-->Persistence : userRepository
+        deactivate RepositoryFactory
+        Persistence-->Service : userRepository
+
+        deactivate Persistence
+
+        deactivate RepositoryFactory
+
+        Service->Repository: save(user)
+
+        Service --> Controller: user
+
+        deactivate Service
+
+        Controller -->UI: user
+    deactivate Controller
+
+
+        UI-->Actor: Show the new user information
+deactivate UI
+@enduml

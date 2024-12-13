@@ -1,0 +1,133 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor CustomerManager as Actor
+participant ":SelectInterviewModelUI" as UI <<presentation>>
+control ":SelectInterviewModelController" as CTRL <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant "PersistenceContext" as PC <<persistence>>
+participant ":RepositoryFactory" as RF <<persistence>>
+participant ":JobOpening" as JO <<domain>>
+participant ":JobOpeningRepository" as JOR <<repository>>
+participant ":PluginRepository" as PR <<repository>>
+
+
+activate Actor
+
+    Actor -> UI : Asks to select the Interview\n Model for a job Opening
+        activate UI
+
+
+
+
+    UI-> CTRL** : create
+
+     UI-> CTRL : allJobOpenings()
+    activate CTRL
+
+ CTRL->AR : authorizationService()
+ activate AR
+ AR->AUTHS : create()
+
+
+                        AR-->CTRL : authz
+                        deactivate AR
+
+
+       CTRL->PC:repositories()
+                               activate PC
+                               PC->RF : create()
+                               PC->RF : jobOpenings()
+
+
+                               activate RF
+                               RF->JOR:create()
+
+
+                               RF --> PC : jobOpeningRepository
+                               deactivate RF
+                               PC-->CTRL : jobOpeningRepository
+                               deactivate PC
+
+        CTRL->JOR: jobOpenings()
+        activate JOR
+        JOR-->CTRL: allJobOpenings()
+        deactivate JOR
+        CTRL-->UI: jobOpenings
+    deactivate CTRL
+
+
+        UI-->Actor : Shows the list of Job Openings and aks to select one to associate\n the Interview Model selected to that job opening
+deactivate UI
+
+    alt option != 0
+        Actor -> UI : Selects the job Opening
+    activate UI
+
+    UI-> CTRL : allInterviewPlugin()
+        activate CTRL
+  CTRL->PC:repositories()
+                               activate PC
+                               PC->RF : create()
+                               PC->RF : plugins()
+
+
+                               activate RF
+                               RF->PR:create()
+
+
+                               RF --> PC : pluginRepository
+                               deactivate RF
+                               PC-->CTRL : pluginRepository
+                               deactivate PC
+
+
+
+            deactivate RF
+
+            CTRL->PR: findPluginByType(PluginType.InterviewS)
+            activate PR
+            PR->CTRL: plugins
+
+            deactivate PR
+
+            CTRL-->UI: plugins
+
+                deactivate CTRL
+
+
+         UI-->Actor: Shows list of the registered Interview Models and asks to select one
+       deactivate UI
+
+
+   alt option != 0
+           Actor -> UI : Selects the wanted Interview Model
+       activate UI
+
+       UI-> CTRL : putInterviewModel(jobOpeningSelected,pluginSelected)
+               activate CTRL
+
+               CTRL -> JO : putInterviewsPlugin(plugin)
+
+               CTRL -> JOR: save(jobOpening)
+
+
+              CTRL-->UI:
+                              deactivate CTRL
+
+
+                       UI-->Actor: shows operation success and displays\n the plugin selected and the job opening associated
+                     deactivate UI
+
+
+
+
+
+@enduml

@@ -1,0 +1,106 @@
+@startuml
+
+title "US 2002  As Operator, I want to register an application of a candidate for a job opening and import all files received"
+
+
+class "RegisterJobApplicationUI" as UI{
+    +selectFolder(FoldersName) : String
+    +selectJobOpening(listJobOpenings) : JobOpening
+}
+
+class PersistenceContext{
+    repositories()
+}
+
+class "RegisterJobApplicationController" as Controller{
+    +getFolders() : List<String>
+    +getFilesName(folder) : List<String>
+    +readFileContent(file) :List<String>
+    +findAllJobOpenings() : Iterable<JobOpening>
+    +registerJobApplication(candidateEmail, candidateFirstName, candidateLastName,  candidatePhoneNumber, jobOpening, filesData) : JobApplication
+    +addUser(email, password, firstName, lastName, roles, createdOn) : SystemUser
+
+}
+
+interface "RepositoryFactory" as Factory{
+    jobOpenings();
+    jobOpenings(TransactionalContext tx)
+    jobApplications();
+    jobApplications(TransactionalContext tx)
+}
+
+
+interface JobOpeningRepository{
+    jobOpenings();
+}
+
+interface JobApplicationRepository{
+    jobApplications();
+}
+
+interface CandidateRepository{
+    candidates();
+}
+
+class JobApplication{
+    - candidate : Candidate
+    - jobOpening : JobOpening
+    - filePaths List<String>
+    - status : Status
+}
+
+
+class Status {
+    - StatusDescription : String
+}
+
+
+
+
+class Candidate{
+    - systemUser : SystemUser
+    - phoneNumber : PhoneNumber
+    - id : EmailAddress
+}
+
+class JobOpening {
+    -jobReference : JobReference
+    -numberOfVacancies : NumberOfVacancies
+    -jobFunction : JobFunction
+    -contractType : ContractType
+    -mode : Mode
+    -address : Address
+    -companyName : Customer
+    -description :Description
+    -registrationDate : Calendar
+    -recruitmentProcess : RecruitmentProcess
+    -requirementsPlugin : Plugin
+    -interviewPlugin : Plugin
+
+}
+
+
+
+
+
+UI ..> Controller
+Controller ..> PersistenceContext
+PersistenceContext->Factory
+
+Factory ..> JobOpeningRepository
+Factory ..> JobApplicationRepository
+Factory ..> CandidateRepository
+
+JobOpeningRepository --> "*" JobOpening :stores
+JobApplicationRepository --> "*" JobApplication :stores
+CandidateRepository --> "*" Candidate :stores
+
+Controller ..> JobOpeningRepository
+Controller ..> JobApplicationRepository
+Controller ..> CandidateRepository
+
+JobApplication--> Status
+
+
+
+@enduml

@@ -1,0 +1,95 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3002 - List all my job openings in the App" Sequence Diagram
+'hide footbox
+
+
+
+participant ":ClientHandler" as Server <<System>>
+control ":ListJobOpeningServerController" as CTRL <<application>>
+participant ":AuthorizationService" as AuthorizationService <<service>>
+
+'participant ":NotificationService" as Service <<domain>>
+'participant ":NotificationDTO" as DTO <<domain>>
+participant ":CustomerRepository" as customerRepository <<repository>>
+participant ":JobOpeningRepository" as jobOpeningRepository <<repository>>
+'participant ":JobApplicationRepository" as jobApplicationRepository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+
+-> Server : (tcp) jobOpReq
+
+ Server->Server : jobOpReq(version, code, data)
+ activate Server
+
+  Server->AuthorizationService : authenticatedUser().email()
+
+  activate AuthorizationService
+
+  AuthorizationService--> Server : email
+
+  deactivate AuthorizationService
+
+
+ Server->CTRL: findByEmail(email)
+
+ activate CTRL
+
+
+
+  CTRL->customerRepository : findByEmail(email)
+
+  activate customerRepository
+
+  customerRepository-->CTRL : customer
+
+    deactivate customerRepository
+
+    CTRL --> Server: customer
+
+    deactivate CTRL
+
+
+  Server->CTRL : findAllByCustomer(customer)
+
+  activate CTRL
+
+  CTRL->jobOpeningRepository : findAllByCustomer(customer)
+
+  activate jobOpeningRepository
+
+  jobOpeningRepository-->CTRL : jobOpeningList
+
+    deactivate jobOpeningRepository
+
+    CTRL-->Server : jobOpeningList
+
+    deactivate CTRL
+
+
+    Server -> SerializeUtil: serializeIterable(jobOpeningList)
+
+
+    activate SerializeUtil
+
+     SerializeUtil --> Server: jobOpeningListData
+
+    deactivate SerializeUtil
+
+ Server->Server : jobOpResp(version, code, jobOpeningListData)
+ deactivate Server
+
+
+
+
+ <-- Server: (tcp) jobOpResp
+deactivate Server
+
+
+
+
+@enduml

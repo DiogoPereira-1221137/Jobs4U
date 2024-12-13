@@ -1,0 +1,149 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor Operator as Actor
+participant ":RegisterJobApplicationUI" as UI <<presentation>>
+control ":RegisterJobApplicationController" as Controller <<application>>
+participant ":ApplicationFileBot" as ApplicationFileBot <<application>>
+'participant "JobOpenning" as JobOpenning <<domain>>
+participant ":JobApplication" as JobApplication <<domain>>
+participant "PersistenceContext" as Persistence <<persistence>>
+participant "RepositoryFactory" as RepositoryFactory
+participant ":CandidateRepository" as CandidateRepository <<repository>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepository <<repository>>
+
+activate Actor
+    Actor -> UI : request to register an application
+
+    activate UI
+
+    UI-> Controller** : create
+
+    UI->Controller: getFolders()
+
+    activate Controller
+    Controller->Controller : getFolders()
+
+    Controller-->UI: FoldersName
+    deactivate Controller
+
+    UI --> Actor: request to select a folder to import the files
+    deactivate UI
+    Actor -> UI: shared folder
+
+    activate UI
+
+    UI->UI : selectFolder(FoldersName)
+
+    UI->Controller: getFilesName(folder)
+    activate Controller
+
+
+    Controller->Controller: getFilesName(folder)
+
+    Controller-->UI : filesData
+
+    deactivate Controller
+
+    UI->Controller: readFileContent(file)
+    activate Controller
+    Controller->Controller : readFileContent(file)
+
+    Controller--> UI : candidateData
+
+    deactivate Controller
+
+
+     UI -> Controller: findAllJobOpenings()
+
+     activate Controller
+
+
+     Controller->Persistence:repositories()
+    activate Persistence
+    Persistence->RepositoryFactory:create()
+    Persistence-->Controller: factory
+    deactivate Persistence
+     Controller->RepositoryFactory: JobOpennings()
+     activate RepositoryFactory
+     RepositoryFactory->JobOpeningRepository:create()
+     RepositoryFactory-->Controller : JobOpeningRepository
+
+     deactivate RepositoryFactory
+
+     Controller->JobOpeningRepository: jobOpenings()
+
+     JobOpeningRepository-->Controller: jobOpenings
+
+     Controller-->UI:
+     deactivate Controller
+
+     UI-->Actor:
+
+deactivate UI
+
+    Actor->UI : choose a Job Opening
+
+    activate UI
+    UI->UI:selectJobOpening(listJobOpennings)
+
+
+    UI -> Controller : registerJobApplication(candidateEmail, candidateFirstName,candidateLastName,  candidatePhoneNumber, jobOpening, filesData)
+
+    activate Controller
+
+    Controller->CandidateRepository : findByEmail(candidateEmail)
+    activate CandidateRepository
+    CandidateRepository-->Controller: Candidate
+    deactivate CandidateRepository
+
+    alt Candidate != null
+    Controller -> JobApplication: jobApplication(Candidate, jobOpening, filesData)
+    activate JobApplication
+
+    note right of JobApplication: If the Candidate doesn't exist, the system will create it using events
+
+
+    JobApplication --> Controller: JobApplication
+    deactivate JobApplication
+
+
+     Controller->Persistence:repositories()
+    activate Persistence
+    Persistence->RepositoryFactory:create()
+    Persistence-->Controller: factory
+    deactivate Persistence
+
+    Controller->RepositoryFactory : jobApplication()
+    activate RepositoryFactory
+    RepositoryFactory->JobApplicationRepository : create()
+    RepositoryFactory-->Controller : JobApplicationRepository
+
+    deactivate RepositoryFactory
+
+    Controller->JobApplicationRepository: save(JobApplication)
+
+    Controller--> UI: success message
+
+    deactivate Controller
+
+    UI-->Actor: show message of success
+
+    deactivate UI
+    end
+
+
+
+
+
+
+
+
+@enduml

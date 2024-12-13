@@ -1,0 +1,35 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3000 - As Candidate, I want to list all my applications and their state (including the number of applicants)." Sequence Diagram
+'hide footbox
+actor "Candidate" as C
+
+participant ":CandidateApp" as CandidateApp <<System>>
+participant ":TCPServer" as Server <<System>>
+
+activate C
+
+    C -> CandidateApp : asks to list all the applications
+
+
+        activate CandidateApp
+        CandidateApp -> Server : (tcp) listAllApplicationsReq
+
+
+         activate Server
+         Server-->CandidateApp: (tcp) listAllApplicationsResp
+        deactivate Server
+
+        CandidateApp --> C : shows list of all the jobApplications and their state
+
+
+       deactivate CandidateApp
+
+deactivate C
+
+@enduml

@@ -1,0 +1,170 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+title "US1013 - Rank the candidates for a job opening" Sequence Diagram
+'hide footbox
+actor "Customer Manager" as Actor
+participant ":RankCandidateUI" as UI <<presentation>>
+control ":RankCandidatesController" as Controller <<application>>
+'participant "AuthzRegistry" as AR  <<application>>
+'participant ":AuthorizationService" as AUTHS <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepository <<repository>>
+participant ":JobApplicationRepository" as JobApplicationRepository <<repository>>
+participant ":Rank" as Rank <<domain>>
+participant ":RankRepository" as RankRepository <<repository>>
+
+activate Actor
+    Actor -> UI : Asks to rank all candidates of a JobOpening
+        activate UI
+
+
+     UI-> Controller** : create
+
+     UI-> Controller : listAllJobOpenings()
+    activate Controller
+
+'           Controller->AR : authorizationService()
+'          activate AR
+'          AR->AUTHS : create()
+'
+'
+'         AR-->Controller : authz
+'         deactivate AR
+
+        Controller -> JobOpeningRepository: findAll()
+        activate JobOpeningRepository
+
+        JobOpeningRepository -->  Controller: allJobOpenings
+        deactivate JobOpeningRepository
+
+        Controller -->  UI: allJobOpenings
+
+        deactivate Controller
+
+
+
+
+        UI-->Actor: Shows the list of the jobOpenings to choose
+
+deactivate UI
+
+alt option != 0
+
+    Actor -> UI : Choose the JobOpening to list all of their candidates
+    activate UI
+
+      UI-> Controller : findCandidates(jobOpeningSelected)
+         activate Controller
+
+             Controller -> JobApplicationRepository: findByJobOpening(jobOpeningSelected)
+             activate JobApplicationRepository
+
+             JobApplicationRepository -->  Controller: candidatesByJobOpening
+             deactivate JobApplicationRepository
+
+             Controller -->  UI: candidatesByJobOpening
+
+             deactivate Controller
+
+             UI -> Controller: findRankByJobReference(jobOpeningSelected.jobReference())
+             activate Controller
+
+             Controller -> RankRepository: findByJobReference(jobReference)
+
+             activate RankRepository
+
+             RankRepository --> Controller: rankSaved
+
+             deactivate RankRepository
+
+             Controller --> UI: rankSavedList
+
+             deactivate Controller
+
+            alt rankSavedList.hasNext()
+
+            UI->UI: transferRankingData(ranked, rankedSaveList,candidatesByJobOpening)
+            activate UI
+            UI->UI: ranked
+
+            deactivate UI
+
+            end
+
+
+
+
+             UI-->Actor: Shows the list of the candidates filtered by jobOpening
+
+             deactivate UI
+
+             loop option != 0
+
+            Actor->UI: Choose to rank the candidates
+            activate UI
+
+            UI-->Actor: Ask to choose the candidates you want to rank
+            deactivate UI
+
+            Actor->UI: Choose one or more candidates to rank
+            activate UI
+
+            UI-->Actor: Ask to choose the positions you want to put the candidates
+            deactivate UI
+
+            Actor->UI: Choose the respective positions of the candidates
+            activate UI
+
+
+             UI-->Actor: Shows the list of the candidates with the new ranks
+             deactivate UI
+
+
+
+             end
+
+             Actor -> UI: Choose the option to end the ranking process and save
+             activate UI
+
+             UI -> Controller : storeRank( candidatesFinalRanks, jobOpeningReference )
+
+             activate Controller
+
+
+             Controller -> Rank : create
+             activate Rank
+
+             Rank -> Controller : rank
+             deactivate Rank
+
+
+             Controller -> RankRepository : save(rank)
+
+             Controller --> UI : success
+             deactivate Controller
+
+             UI --> Actor: Show it was a success
+             deactivate UI
+
+
+
+
+
+
+
+
+
+
+
+
+
+end
+
+
+
+@enduml

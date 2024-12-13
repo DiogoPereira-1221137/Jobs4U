@@ -1,0 +1,201 @@
+@startuml
+
+title "US1014 - Record the time and date for an interview with a candidate" Class Diagram
+
+class PhoneNumber{
+-number : String
+}
+
+
+
+class Candidate{
+-systemUser : SystemUser
+-phoneNumber : PhoneNumber
+-id : EmailAddress
+
++user() : SystemUser
++phoneNumber() : PhoneNumber
++getId() : EmailAddress
+}
+
+class JobApplication{
+    - candidate : Candidate
+    - jobOpening : JobOpening
+    - filePaths : List<ApplicationFile>
+    - status : Status
+
+    +candidate() : Candidate
+    +status() : Status
+    +jobOpening() : JObOpening
+}
+
+class EmailAddress{
+- email : String
+}
+
+class JobOpening{
+-jobReference : JobReference
+-numberOfVacancies : NumberOfVacancies
+-jobFunction : JobFunction
+-contractType : ContractType
+-mode : Mode
+-address : Address
+-companyName : Customer
+-description :Description
+-registrationDate : Calendar
+-recruitmentProcess : RecruitmentProcess
+-requirementsPlugin : Plugin
+-interviewPlugin :Plugin
+-jobOpeningStatus : JobOpeningStatus
+
++jobReference() :JobReference
++jobFunction() : JobFunction
++contractType() : ContractType
++mode() : Mode
++address() : Address
++companyName() : Customer
++description() : Description
++registrationDate() : Calendar
++setId(JobReference jobReference)
++recruitmentProcess() : RecruitmentProcess
++requirementsPlugin() : Plugin
++interviewPlugin() : Plugin
++jobOpeningStatus() : JobOpeningStatus
+}
+
+class SystemUser{
+-username : Username
+-name : Name
+-email : EmailAddress
++ identity() : Username
++ email()  : EmailAddress
++ name() : Name
+}
+
+class Name{
+-firstName : String
+    -lastName : String
+    +firstName() : String
+    +lastName() : String
+}
+
+class RecordTimeDateForInterviewUI{
+
+-selectJobOpening() : JobOpening
+-displayJobOpeningMenu(jobOpenings) : JobOpening
+-selectCandidate(selectedJobOpening) : Candidate
+-displayCandidateMenu(jobApplications) : Candidate
++typeDateWithinTimePeriod(startDate, endDate) : Calendar
++typeHourWithinTimePeriod() : Calendar
++displayInterviewSchedule(jobOpening, candidate, date, hour)
+}
+
+class RecordTimeDateForInterviewController{
++ findAllJobOpeningsWithInterview() : List<JobOpening>
++ getAcceptedJobApplicationsByJobOpening(jobOpening) : List<JobApplication>
++ registerInterviewSchedule(jobOpening, candidate, date, hour) : JobOpening
+}
+
+
+class TimePeriod{
+-startDate : Calendar
+-endDate : Calendar
+
++startDate() : Calendar
++endDate() : Calendar
+}
+
+class RecruitmentProcess{
+-currentPhase : PhaseNames
+-hasInterview : boolean
+-phases : List<Phase>
+-interviewSchedules : List<InterviewSchedule>
+
++currentPhase() : PhaseNames
++hasInterview() : boolean
++phase() : Phase
++interviewSchedules() : List<InterviewSchedule>
++getInterviewPhase() : InterviewPhase
++addInterviewSchedule(interviewSchedule)
+}
+
+abstract class Phase{
+-timePeriod : TimePeriod
+-phaseName : PhaseNames
+
++timePeriod(): TimePeriod
++phaseName() : PhaseNames
+}
+
+class InterviewPhase{
+}
+
+class PersistenceContext{
++repositories() : RepositoryFactory
+}
+
+interface RepositoryFactory{
+jobOpenings() : JobOpeningRepository
+jobOpenings(autoTx) : JobOpeningRepository
+jobApplications() : JobApplicationRepository
+jobApplications(autoTx) ; JobApplicationRepository
+}
+
+
+interface JobOpeningRepository{
+findJobOpeningsWithInterviewByCustomerManager(customerManager) : Iterable<JobOpening>
+save(jobOpening) : JobOpening
+}
+
+interface JobApplicationRepository{
+findAcceptedApplicationsByJobOpening(jobOpening) : Iterable<JobApplication>
+}
+
+
+class InterviewSchedule{
+-date : Calendar
+-hour : Calendar
+-candidate : Candidate
+
++date() : Calendar
++hour() : Calendar
++candidate() : Candidate
+
+}
+
+Candidate --> SystemUser
+
+SystemUser --> EmailAddress
+SystemUser --> Name
+Candidate --> EmailAddress
+Candidate --> PhoneNumber
+
+RecordTimeDateForInterviewUI ..> RecordTimeDateForInterviewController
+
+
+RecordTimeDateForInterviewController ..> PersistenceContext
+RecordTimeDateForInterviewController ..> JobApplicationRepository
+RecordTimeDateForInterviewController ..> JobOpeningRepository
+
+PersistenceContext --> RepositoryFactory
+
+
+RepositoryFactory ..> JobApplicationRepository
+RepositoryFactory ..> JobOpeningRepository
+
+JobApplicationRepository --> "*" JobApplication : stores
+JobOpeningRepository --> "*" JobOpening : stores
+
+JobApplication "1" --> "1" Candidate
+JobApplication "1" --> "1" JobOpening
+
+InterviewSchedule "1" --> "1" Candidate
+
+RecruitmentProcess "1" --> "0..*" InterviewSchedule
+JobOpening "1" --> "1" RecruitmentProcess
+
+RecruitmentProcess "1" --> "4..5" Phase
+InterviewPhase --|> Phase
+
+Phase --> TimePeriod
+@enduml

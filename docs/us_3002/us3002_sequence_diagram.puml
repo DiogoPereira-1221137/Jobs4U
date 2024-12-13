@@ -1,0 +1,42 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3002 - List all my job openings in the App" Sequence Diagram
+'hide footbox
+actor "Customer" as C
+
+participant ":CustomerApp" as CustomerApp <<System>>
+participant ":TCPServer" as Server <<System>>
+
+activate C
+
+    C -> CustomerApp : Asks to list all the JobOpenings notifications
+
+
+        activate CustomerApp
+
+        CustomerApp -> Server : (tcp) jobOpReq
+
+
+         activate Server
+         Server--> CustomerApp : (tcp) jobOpResp
+        deactivate Server
+
+
+        CustomerApp -> Server : (tcp) howMuchJobAppReq
+
+         activate Server
+         Server--> CustomerApp : (tcp) howMuchJobAppResp
+        deactivate Server
+
+        CustomerApp-->C : Shows all job openings associated with this customer
+
+       deactivate CustomerApp
+
+deactivate C
+
+@enduml

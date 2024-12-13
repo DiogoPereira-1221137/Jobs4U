@@ -1,0 +1,64 @@
+@startuml                                                                                                                                                                             @startuml
+'skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing true
+skinparam linetype polyline
+
+skinparam classAttributeIconSize 0
+
+
+class ConfigurePluginUI {
+}
+class ConfigurePluginController {
+    + createPlugin(PluginType pluginType, Description description,\n PluginMainClassName pluginMainClassName,\n JarFileName jarFileName) : boolean operationStatus
+    + fetchPluginTypes() : List<PluginType> pluginTypeList
+    + fetchJarFiles() : List<String> list
+    + displayOptions(List<String> list)
+    + displayPluginTypes(List<PluginType> list)
+
+}
+
+
+class RepositoryFactory {
+    + Plugins(): PluginRepository
+}
+
+class PluginRepository {
+    + createPlugin(PluginType pluginType, Description description,\n PluginMainClassName pluginMainClassName,\n JarFileName jarFileName) : boolean operationStatus
+    + save(Plugin plugin) : boolean success
+}
+
+class Plugin {
+}
+
+class PluginIdentifier {
+    - String identifier
+}
+class PluginType {
+    - String name;
+    - String shorthand;
+    +  static pluginTypeList() : List<PluginType> pluginTypeList
+}
+class PluginMainClassName {
+    - String name
+}
+class JarFileName {
+    - String name
+}
+class Description {
+    - String description
+}
+
+
+ConfigurePluginUI .> ConfigurePluginController
+ConfigurePluginController ..> RepositoryFactory : repositories
+RepositoryFactory -> RepositoryFactory : instance
+RepositoryFactory --> "1" PluginRepository
+PluginRepository "1" --> "*" Plugin : Plugin
+Plugin "1" --> "1" PluginIdentifier
+Plugin "1" ---> "1" JarFileName
+Plugin "1" --> "1" Description
+Plugin "*" ---> "1" PluginMainClassName
+Plugin "*" ---> "1" PluginType
+
+@enduml

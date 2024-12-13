@@ -1,0 +1,5 @@
+InputPath: ../../EmailOutputFile
+FullPathOutput: ../../import
+Prefix: 1
+Prefix: 2
+Prefix: 3

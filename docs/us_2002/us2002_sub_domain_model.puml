@@ -1,0 +1,80 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+package "Candidate Aggregate"{
+    class "«root»\n«entity»\nCandidate" as Candidate{
+
+    }
+     note as EmailCandidate
+              Identifire
+             end note
+
+    class "Name" as Name2 {
+        firstName
+        lastName
+    }
+
+    class "«value object»\nPhoneNumber" as PhoneNumber{
+    }
+
+     class "«value object»\nE-Mail" as EMail2{
+     }
+
+}
+
+
+
+
+package "Job Opening Aggregate"{
+
+
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+    }
+
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+}
+
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class "«value object»\nStatus" as Status{
+    }
+
+
+
+    class "«value object»\nCurriculum" as Curriculum{
+    }
+
+
+    class "«value object»\n«calculated»\nGrade" as Grade2{}
+
+}
+
+
+JobApplication"1"-->"1" Curriculum : includes
+JobApplication --> "0..1" Grade2 : includes
+JobApplication "1"-->"1" Status : has
+
+JobOpening "1"-->"1" JobReference : includes
+JobOpening "1"<---"*"JobApplication : refers to
+
+
+
+EmailCandidate.EMail2
+Candidate "1"-->"1" EMail2 :identified by
+PhoneNumber "1"<-"1" Candidate :has
+Candidate "1" <-- "1" JobApplication :refers to
+Candidate --> Name2 : has
+
+
+
+
+@enduml

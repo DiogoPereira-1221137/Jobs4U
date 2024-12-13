@@ -1,0 +1,206 @@
+@startuml
+
+title "US1011 - Select Interview Model for Job Opening" Class Diagram
+
+class SelectInterviewModelController{
++allJobOpenings() : Iterable<JobOpening>
++allInterviewModel() : Iterable<Plugin>
++putRequirement(JobOpening jobOpening, Plugin plugin)
+}
+
+class SelectInterviewModelUI{
+}
+
+class PluginMainClassName{
+-name : String
++name() : String
+}
+
+class Plugin {
+-pluginID : PluginIdentifier
+-pluginType : PluginType
+-description : Description
+-pluginMainClassName : PluginMainClassName
+-jarFileName : JarFileName
+
++identity() : PluginIdentifier
++pluginType() : PluginType
++description() :Description
++pluginMainClassName() : PluginMainClassName
++jarFileName() : JarFileName
+}
+
+class JarFileName{
+-name : String
+}
+
+class JobOpening {
+-jobReference : JobReference
+-numberOfVacancies : NumberOfVacancies
+-jobFunction : JobFunction
+-contractType : ContractType
+-mode : Mode
+-address : Address
+-companyName : Customer
+-description :Description
+-registrationDate : Calendar
+-recruitmentProcess : RecruitmentProcess
+-interviewPlugin : Plugin
+-interviewPlugin :Plugin
+
++jobReference() :JobReference
++jobFunction() : JobFunction
++contractType() : ContractType
++mode() : Mode
++address() : Address
++companyName() : Customer
++description() : Description
++registrationDate() : Calendar
++setId(JobReference jobReference)
++recruitmentProcess() : RecruitmentProcess
++interviewPlugin() : Plugin
++interviewPlugin() : Plugin
+}
+
+class JobFunction{
+-jobDescription : String
+}
+
+class NumberOfVacancies{
+-number : Integer
+}
+
+class Description{
+-description : String
+}
+
+class JobReference{
+-jobReference : Integer
++jobReference() : Integer
+}
+
+class Address{
+-street : String
+-city : String
+-state : String
+-country : String
+-zipcode : String
+
+-validateZipcode(zipcode) : Boolean
+}
+
+class Customer{
+-systemUser : SystemUser
+-code : Code
+-address : Address
+-customerManager : SystemUser
+
++user() : SystemUser
++getID() : Code
++address() : Address
++customerManagerAssociated() : SystemUser
+}
+
+class EmailAddress{
+-email : String
+
+}
+
+class Name{
+-firstName : String
+-lastName : String
++firstName() : String
++lastName() : String
+}
+
+class Code{
+-code : String
++getCode() : String
+}
+
+
+class SystemUser{
+-name : Name
+-email : EmailAddress
+
++email() : EmailAddress
++name() : Name
+}
+
+class Mode{
+-modeDescription
++modeDescription()
+}
+
+class ContractType{
+-contractType : String
++contractType() : String
+}
+
+
+class PersistenceContext{
++repositories()
+}
+
+interface RepositoryFactory{
+jobOpenings()
+jobOpenings(TransactionalContext tx)
+plugins()
+plugins(TransactionalContext autoTx)
+}
+
+interface JobOpeningRepository{
+jobOpenings()
+save(jobOpening)
+}
+
+interface PluginRepository{
+findPluginByType(PluginType.REQUIREMENTS)
+}
+
+class PluginType{
+-shorthand : String
+-pluginTypeName : String
++ isValid(String shorthand)
++getShorthandName() : String
++getPluginTypeName() : String
+}
+
+class PluginIdentifier{
+-identifier : String
++validateIdentifier(String identifier)
+}
+
+SelectInterviewModelUI ..> SelectInterviewModelController
+Customer --> Address
+JobOpening --> Address
+JobOpening --> Mode
+JobOpening --> ContractType
+JobOpening --> Customer
+JobOpening --> JobFunction
+JobOpening --> JobReference
+JobOpening --> Description
+JobOpening --> NumberOfVacancies
+JobOpening --> Plugin
+
+SystemUser --> EmailAddress
+Customer --> Code
+Customer --> SystemUser
+
+PersistenceContext --> RepositoryFactory
+SystemUser --> Name
+Plugin --> PluginType
+Plugin --> Description
+Plugin --> PluginIdentifier
+Plugin --> PluginMainClassName
+Plugin --> JarFileName
+ SelectInterviewModelController ..> PersistenceContext
+
+ SelectInterviewModelController ..> JobOpeningRepository
+ SelectInterviewModelController ..> PluginRepository
+RepositoryFactory ..> JobOpeningRepository
+RepositoryFactory  ..> PluginRepository
+JobOpeningRepository --> "*" JobOpening : stores
+PluginRepository --> "*" Plugin : stores
+
+@enduml

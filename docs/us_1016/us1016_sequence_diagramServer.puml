@@ -1,0 +1,117 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1016 - I want the system to notify candidates,by email, of the result of the verification process" Sequence Diagram
+
+'hide footbox
+
+
+
+participant ":ClientHandler" as Server <<System>>
+'control ":ListJobOpeningServerController" as CTRL <<application>>
+'participant ":NotificationService" as Service <<domain>>
+participant ":Notification" as Notif <<domain>>
+'participant ":CustomerRepository" as customerRepository <<repository>>
+'participant ":JobOpeningRepository" as jobOpeningRepository <<repository>>
+participant ":NotificationRepository" as Repository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+participant ":SendEmail" as Sender <<domain>>
+
+-> Server : (tcp) sendPublishReq
+
+ Server->Server : sendPublishReq(version, code, data)
+ activate Server
+
+
+ Server -> SerializeUtil: deserializeList(data.get(0))
+
+
+     activate SerializeUtil
+
+      SerializeUtil --> Server: jobApplicationsList
+
+     deactivate SerializeUtil
+
+
+ Server -> SerializeUtil: deserializeObject(data.get(1))
+
+
+     activate SerializeUtil
+
+      SerializeUtil --> Server: customerM_email
+
+     deactivate SerializeUtil
+
+
+
+
+     Server -> Server: jobFunction = jobApplicationsList.get(0).jobFunction()
+
+Server -> Server: companyName = jobApplicationsList.get(0).companyName();
+
+     loop for each JobApplicationDTO job in publishList
+
+
+     Server -> Notif: new Notification(customerM_email ,jobApplication.candidateEmail() ,"a","b","c")
+     activate Notif
+
+      Notif --> Server: notify
+     deactivate Notif
+
+alt jobApplication.status().equals(StatusType.APPROVED
+      Server -> Server: notify.approvedApplication(jobApplication.candidateName(), jobFunction, companyName)
+
+      Server -> Sender: sendEmail(notify.senderEmail().toString(), notify.receiverEmail().toString(), notify.emailFormat())
+
+      activate Sender
+
+      Sender --> Server : response
+
+      deactivate Sender
+
+
+else jobApplication.status().equals(StatusType.REJECTED)
+      Server -> Server: notify.rejectedApplication(jobApplication.candidateName(), jobFunction, companyName)
+
+      Server -> Sender: sendEmail(notify.senderEmail().toString(), notify.receiverEmail().toString(), notify.emailFormat())
+
+      activate Sender
+
+      Sender --> Server : response
+
+      deactivate Sender
+
+
+end
+
+
+     alt response == true
+
+
+           deactivate Sender
+
+           Server -> Repository: save(notify)
+
+     end
+
+
+
+end
+
+ Server->Server : howMuchJobAppResp(version, code, jobApplicationsData)
+ deactivate Server
+
+
+
+
+ <-- Server: (tcp) sendPublishResp
+deactivate Server
+
+
+
+
+@enduml

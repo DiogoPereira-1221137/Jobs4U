@@ -1,0 +1,316 @@
+@startuml
+
+skinparam shadowing false
+
+'left to right direction
+
+
+package "Customer Aggregate"{
+    class "«entity»\n«root»\nCustomer" as Customer{
+
+    }
+
+class SystemUser{
+}
+
+    class "«value object»\nName" as Name1 {
+        firstName
+        lastName
+    }
+     class "«value object»\nE-Mail" as EMail1{
+     }
+
+
+     class "«value object»\nAddress" as Address2{
+            Street
+            City
+            State
+            Country
+            Zipcode
+     }
+
+     class "«value object»\nCode" as Code{
+     }
+
+}
+
+note as N2
+  These two classes represent the same concept.
+  We couldn't find a way to represent the same
+  concept in two different aggregates, this
+  concept is a value object, so it can be shared
+  by two aggregates.
+end note
+
+
+note as N4
+    These two classes represent the same concept.
+    We couldn't find a way to represent the same
+    concept in two different aggregates, this
+    concept is a value object, so it can be shared
+    by two aggregates.
+end note
+
+package "Notification Aggregate"{
+    class "«entity»\n«root»\nNotification" as Notification{
+    }
+}
+
+
+
+
+class UserDomain{
+}
+
+package "Plugin Aggregate"{
+    class  "«root»\n«entity»\nPlugin" as Plugin{
+    }
+    class "«value object»\n«identifier»\nPluginIdentifier" as PlugID{
+    }
+    class "«value object»\nPluginType" as PlugType{
+    }
+    class "«value object»\nPluginMainClassName" as PlugClass{
+    }
+    class "«value object»\nJarFileName" as JarFile{
+    }
+    class "«value object»\nDescription" as PlugDesc{
+    }
+}
+
+
+
+note as N1
+  These two classes represent the same concept.
+  We couldn't find a way to represent the same
+  concept in two different aggregates, this
+  concept is a value object, so it can be shared
+  by two aggregates.
+
+end note
+
+note as N5
+  These two classes represent the same concept.
+  We couldn't find a way to represent the same
+  concept in two different aggregates, this
+  concept is a value object, so it can be shared
+  by two aggregates.
+
+end note
+
+package "Rank Aggregate"{
+
+    class "«entity»\n«root»\nRank" as Rank{
+    }
+
+note as N6
+The identifier of the entity Rank
+is the JobReference(id) of the JobOpening
+end note
+
+}
+N6 -- Rank
+
+
+package "Job Opening Aggregate"{
+
+    class "«entity»\nRecruitmentProcess" as RecruitmentProcess{
+        HasInterviewPhase
+    }
+
+     class "«entity»\nPhase" as Phase{
+        phaseName
+        startDate
+        endDate
+     }
+
+    class "«value object»\nPhaseNames" as PhaseNames{
+
+    }
+
+
+ class "«entity»\nScreeningPhase" as ScreeningPhase{
+
+     }
+
+    class "«entity»\nResultPhase" as ResultPhase{
+    }
+
+    class "«entity»\nAnalysisPhase" as AnalysisPhase{
+
+    }
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+
+    }
+
+    class "«value object»\nJogOpeningStatus" as JogOpeningStatus {
+    }
+
+     class "«value object»\nContractType" as ContractType{
+     }
+
+    class "«value object»\nMode" as Mode{
+
+    }
+
+    class "«value object»\nJobFunction" as JobFunction{
+
+    }
+
+    class "«value object»\n NumberOfVacancies" as  NumberOfVacancies{
+
+    }
+
+    class "«value object»\nDescription" as Description{
+
+    }
+
+
+    class "«value object»\nAddress" as Address1{
+        Street
+        City
+        State
+        Country
+        Zipcode
+    }
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+    class  "«entity»\nInterviewPhase" as InterviewPhase{
+
+    }
+
+}
+
+package "Candidate Aggregate"{
+    class "«root»\n«entity»\nCandidate" as Candidate{
+
+    }
+
+    class "«value object»\nName" as Name2 {
+        firstName
+        lastName
+    }
+
+    class "«value object»\nPhoneNumber" as PhoneNumber{
+    }
+
+     class "«value object»\n«identifier»\nE-Mail" as EMail2{
+     }
+
+}
+
+
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class "«value object»\nStatus" as Status{
+    }
+
+     class "«value object»\n«identifier»\nId" as ID{
+     }
+
+    class "«value object»\n«calculated»\nGrade" as Grade{}
+
+
+    class "«value object»\nApplicationFile" as ApplicationFile{
+    relativeFilePath
+    fileContent
+
+
+    }
+
+    class "«value object»\nType" as Type{
+    }
+}
+
+package "Interview Aggregate"{
+
+class "«root»\n«entity»\nInterview" as Interview{
+}
+ class "«value object»\nInterviewSchedule" as InterviewSchedule{
+        date
+        hour
+    }
+}
+
+JobApplication"1"-->"1" ID : identified by
+Plugin "0..2" <-- "1" JobOpening : includes
+ScreeningPhase --|> Phase
+ResultPhase --|> Phase
+InterviewPhase --|> Phase
+AnalysisPhase --|> Phase
+
+ApplicationFile "1" --> "1" Type
+JobApplication "1" --> "1..*" ApplicationFile
+
+JobApplication "1..*" <-- "1" Rank : includes
+JobOpening "1" <-- "1" Rank : identified by
+Mode "1" <-- "1"JobOpening : includes
+JobFunction "1" <-- "1"JobOpening : includes
+NumberOfVacancies "1" <-- "1"JobOpening : includes
+Description "1" <-- "1"JobOpening : includes
+Address1"1" <-- "1"JobOpening : includes
+ContractType "1" <--"1" JobOpening : includes
+
+
+
+JobOpening "1"-->"1" JobReference : identified by
+Customer "1"-->"1" EMail1 : has an
+
+Customer "1"..>"1" UserDomain
+Customer "1"<---"1" JobOpening : includes
+
+Candidate "1"..>"1" UserDomain
+
+JobOpening "1"-->"1" JogOpeningStatus : includes
+
+Candidate "1"-->"1" EMail2 :identified by
+PhoneNumber "1"<-"1" Candidate :has
+Candidate "1" <-- "1" JobApplication :refers to
+JobOpening "1"<---"*"JobApplication : refers to
+RecruitmentProcess "1" *--"4..5" Phase :part of
+RecruitmentProcess "1" -> "1" PhaseNames : includes
+JobOpening "1" --> "1"RecruitmentProcess :includes
+
+JobOpening <-- Notification : made when there's changes to
+JobApplication <-- Notification : made when there's changes to
+
+
+JobApplication --> "0..1" Grade : includes
+
+N1 ... EMail1
+
+Plugin"1" -->"1" PlugClass : includes
+Plugin"1" -->"1" JarFile : includes
+Plugin "1"--> "1"PlugDesc : includes
+Plugin "1" --> "1" PlugID : identified by
+Plugin"1" --> "1" PlugType : has a
+
+N1 . EMail2
+N2 . Address1
+N2 . Address2
+
+Address2 <-- Customer : has an
+
+Customer --> Code : identified by
+
+
+N4 .. Description
+N4 .. PlugDesc
+
+Candidate --> Name2 : has
+Customer --> Name1 : has
+Customer --> SystemUser : managed by
+N5 .. Name1
+N5 .. Name2
+InterviewSchedule <-- Interview
+Interview "1" --> "1" JobOpening
+Interview "1" --> "1" JobApplication
+JobApplication "1"-->"1" Status : has
+
+@enduml

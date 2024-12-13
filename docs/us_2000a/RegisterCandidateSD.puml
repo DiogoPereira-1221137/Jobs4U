@@ -1,0 +1,98 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor Operator as Actor
+participant RegisterCandidateUI as UI <<presentation>>
+control RegisterCandidateController as Controller <<application>>
+participant "PasswordGenerator" as Password <<application>>
+
+participant ":UserManagementService" as Service <<builder>>
+participant ":SystemUserBuilder" as UserDomain <<domain>>
+participant ":RegisterCandidateEvent" as RegisterCandidateEvent <<Event>>
+participant Dispacher as Dispacher
+participant ":RegisterCandidateWatchDog" as RegisterCandidateWatchDog
+participant ":RegisterCandidateOnEventController" as RegisterCandidateOnEventController
+participant ":Candidate" as Domain <<domain>>
+
+
+'participant "PersistenceContext" as Persistence <<persistence>>
+'participant "RepositoryFactory" as RepositoryFactory
+participant ":UserRepository" as UserRepository <<repository>>
+participant ":CandidateRepository" as Repository <<repository>>
+
+
+activate Actor
+    Actor -> UI : Asks to register a Candidate
+    activate UI
+    UI --> Actor: Ask Candidate info
+    deactivate UI
+    Actor -> UI: First Name, Last Name, E-mail, Address, Phone Number
+
+    activate UI
+     UI-> Controller** : create
+
+
+    UI -> Controller:  generatePassword()
+    activate Controller
+        Controller -> Password : generatePassword()
+        activate Password
+        Password --> Controller : password
+        deactivate Password
+
+        Controller --> UI: password
+        deactivate Controller
+
+
+         UI -> Controller: registerCandidate(firstName, lastName, email, address, phone number)
+        activate Controller
+
+
+
+        Controller -> Service : registerNewUser(password, firstName, lastName, email, roles, createdOn);
+        activate Service
+        Service -> UserDomain: build()
+        Service -> UserRepository : save(user)
+
+        Service --> Controller : user
+
+        deactivate Service
+
+        Controller -> Controller: CandidateMananger = authz.session().get().authenticatedUser() ;
+        
+
+        Controller->RegisterCandidateEvent : new RegisterCandidateEvent(user, phone number)
+
+        Controller-> Dispacher: publish(event)
+
+        Dispacher->RegisterCandidateWatchDog : onEvent(event)
+
+        activate RegisterCandidateWatchDog
+        RegisterCandidateWatchDog->RegisterCandidateOnEventController : registerCandidate(event)
+
+        activate RegisterCandidateOnEventController
+        RegisterCandidateOnEventController -> Domain : new Candidate(user, phone number)
+        RegisterCandidateOnEventController-> Repository: save(Candidate)
+
+        RegisterCandidateOnEventController--> RegisterCandidateWatchDog : Candidate
+
+        deactivate RegisterCandidateOnEventController
+
+
+        deactivate RegisterCandidateWatchDog
+
+
+
+
+        Controller-->UI: CandidateMananger
+    deactivate Controller
+
+
+        UI-->Actor: Candidate info
+deactivate UI
+@enduml

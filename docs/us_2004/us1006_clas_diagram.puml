@@ -1,0 +1,111 @@
+@startuml
+
+title "US2004 - As Operator, I want to upload a text file with the data fields (requirements ) of a candidate for its verification."
+
+
+
+
+
+class JobApplication{
+    - candidate : Candidate
+    - jobOpening : JobOpening
+    - filePaths : List<ApplicationFile>
+    - status : Status
+
+    +candidate() : Candidate
+    +status() : Status
+    +jobOpening() : JObOpening
+}
+
+class ImportFileReader{
+
+}
+
+class JobOpening{
+-jobReference : JobReference
+-numberOfVacancies : NumberOfVacancies
+-jobFunction : JobFunction
+-contractType : ContractType
+-mode : Mode
+-address : Address
+-companyName : Customer
+-description :Description
+-registrationDate : Calendar
+-recruitmentProcess : RecruitmentProcess
+-requirementsPlugin : Plugin
+-interviewPlugin :Plugin
+-jobOpeningStatus : JobOpeningStatus
+'
+'+jobReference() :JobReference
+'+jobFunction() : JobFunction
+'+contractType() : ContractType
+'+mode() : Mode
+'+address() : Address
+'+companyName() : Customer
+'+description() : Description
+'+registrationDate() : Calendar
+'+setId(JobReference jobReference)
+'+recruitmentProcess() : RecruitmentProcess
+'+requirementsPlugin() : Plugin
+'+interviewPlugin() : Plugin
+'+jobOpeningStatus() : JobOpeningStatus
+}
+
+class ImportRequirementsFileUI{
+
+-displayJO(jobOpnenings)
+-displayJA(jobApplications)
+-displayFile(files)
+}
+
+class ImportRequirementsFileController{
++ findAllJobOpeningsWithInterview() : List<JobOpening>
++ getAcceptedJobApplicationsByJobOpening(jobOpening) : List<JobApplication>
++ registerInterviewSchedule(jobOpening, candidate, date, hour) : JobOpening
+}
+
+
+class PersistenceContext{
++repositories() : RepositoryFactory
+}
+
+interface RepositoryFactory{
+jobOpenings() : JobOpeningRepository
+jobOpenings(autoTx) : JobOpeningRepository
+jobApplications() : JobApplicationRepository
+jobApplications(autoTx) ; JobApplicationRepository
+}
+
+
+interface JobOpeningRepository{
+getJobOpenings() : Iterable<JobOpening>
+save(jobOpening) : JobOpening
+}
+
+interface JobApplicationRepository{
+findByJobOpening(jobOpening) : Iterable<JobApplication>
+}
+
+
+
+
+ImportRequirementsFileUI ..> ImportRequirementsFileController
+
+
+ImportRequirementsFileController ..> PersistenceContext
+ImportRequirementsFileController ..> JobApplicationRepository
+ImportRequirementsFileController ..> JobOpeningRepository
+
+PersistenceContext --> RepositoryFactory
+
+
+RepositoryFactory ..> JobApplicationRepository
+RepositoryFactory ..> JobOpeningRepository
+
+JobApplicationRepository --> "*" JobApplication : stores
+JobOpeningRepository --> "*" JobOpening : stores
+
+JobApplication "1" --> "1" JobOpening
+
+
+@enduml

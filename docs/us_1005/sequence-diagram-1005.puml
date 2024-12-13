@@ -1,0 +1,79 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+'hide footbox
+actor "Customer Manager" as NM
+participant ":ListApplicationsByOpeningUI" as UI <<presentation>>
+control ":ListApplicationsByOpeningController" as CTRL <<application>>
+participant ":RepositoryFactory" as Fact <<factory>>
+participant ":JobOpeningRepository" as OpeningRepo <<repository>>
+participant ":JobApplicationRepository" as ApplicationRepo <<repository>>
+
+activate NM
+   NM -> UI :  asks to list all job applications for a specific job opening
+
+    activate UI
+    UI-> CTRL : create()
+
+
+
+             UI -> CTRL : getJobOpenings()
+                        activate CTRL
+                        CTRL -> Fact: create()
+                        CTRL -> Fact: jobOpenings()
+                        activate Fact
+'                        ref over CTRL
+'                            Get Job Openings List
+'
+'                        end ref
+                            Fact->OpeningRepo: create()
+
+                            deactivate Fact
+                            CTRL->OpeningRepo: getJobOpenings()
+                            activate OpeningRepo
+                            OpeningRepo-->CTRL: openingList
+                            deactivate OpeningRepo
+                            CTRL-->UI : openingList
+                        deactivate CTRL
+'    UI->UI: showOpenings()
+
+    UI -> NM: show the list of all job openings and request the selection of one
+    deactivate UI
+    NM -> UI: selects and send a job opening from the list
+    activate UI
+    UI -> CTRL : getJobApplicationsByOpening(jobOpening)
+                        activate CTRL
+
+                        CTRL -> Fact: jobApplications()
+                        activate Fact
+'                        ref over CTRL
+'                            Get Job Openings List
+'
+'                        end ref
+                            Fact->ApplicationRepo: create()
+
+                            deactivate Fact
+'                        ref over CTRL
+'                            Get Job Applications List
+'
+'                        end ref
+                            CTRL->ApplicationRepo: findByJobOpening(jobOpening)
+                            activate ApplicationRepo
+                            ApplicationRepo-->CTRL: applicationList
+                            deactivate ApplicationRepo
+                            CTRL-->UI : applicationList
+                        deactivate CTRL
+
+'    UI->UI: showApplications()
+
+
+        UI --> NM : show the list of all job applications made to the selected job opening
+        deactivate UI
+
+deactivate NM
+
+@enduml

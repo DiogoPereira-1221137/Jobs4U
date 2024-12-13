@@ -1,0 +1,107 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor CustomerManager as Actor
+participant ":SetupPhasesJobOpeningUI" as UI <<presentation>>
+control ":SetupPhasesJobOpeningController" as Controller <<application>>
+participant "PersistenceContext" as Persistence <<persistence>>
+participant "RepositoryFactory" as RepositoryFactory <<persistence>>
+participant ":JobOpenningRepository" as JobOpenningRepository <<repository>>
+participant ":JobOpenning" as JobOpenning <<domain>>
+
+
+activate Actor
+    Actor -> UI : request to setup the phases for a job opening
+    activate UI
+
+
+    UI-> Controller** : create
+
+
+     UI -> Controller: jobOpeningByCustomerManager()
+
+     activate Controller
+
+     Controller->Persistence:repositories()
+     activate Persistence
+     Persistence->RepositoryFactory:create()
+     Persistence-->Controller: factory
+     deactivate Persistence
+
+
+     Controller->RepositoryFactory: JobOpennings()
+     activate RepositoryFactory
+     RepositoryFactory-->JobOpenningRepository:create()
+     RepositoryFactory->Controller : JobOpenningRepository
+
+     deactivate RepositoryFactory
+
+     Controller->JobOpenningRepository: findAll()
+
+     activate JobOpenningRepository
+     JobOpenningRepository --> Controller : jobOpenings
+     deactivate JobOpenningRepository
+
+     Controller-->UI: filteredJobOpennings
+     deactivate Controller
+
+     UI-->Actor:
+
+deactivate UI
+
+    Actor->UI : choose a Job Opening
+    activate UI
+     UI -> UI : selectJobOpening(listJobOpenings)
+
+     UI --> Actor : asks if has interview
+     deactivate UI
+
+     Actor --> UI : answer Yes or No
+     activate UI
+
+     UI -> UI : selectHaveInterview()
+
+     UI -> UI : selectDates(hasInterview)
+
+
+    loop setup phases
+    UI-->Actor: request to insert date for phase
+    deactivate UI
+
+    Actor->UI : insert data
+    activate UI
+
+    end loop
+
+    UI->Controller : SetupPhasesJobOpening(JobOpening, dates)
+    activate Controller
+    Controller-> JobOpenning : setRecruitmentProcess(recruitmentProcess)
+
+
+
+
+    Controller->JobOpenningRepository : save(jobOpening)
+
+
+    Controller -> UI : jobOpening
+    deactivate Controller
+
+
+    UI-->Actor: show success message
+
+    deactivate UI
+
+
+
+
+
+
+
+
+@enduml

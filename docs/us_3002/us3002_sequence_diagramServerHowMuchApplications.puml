@@ -1,0 +1,80 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3002 - List all my job openings in the App" Sequence Diagram
+'hide footbox
+
+
+
+participant ":ClientHandler" as Server <<System>>
+control ":ListJobOpeningServerController" as CTRL <<application>>
+'participant ":NotificationService" as Service <<domain>>
+'participant ":NotificationDTO" as DTO <<domain>>
+'participant ":CustomerRepository" as customerRepository <<repository>>
+'participant ":JobOpeningRepository" as jobOpeningRepository <<repository>>
+participant ":JobApplicationRepository" as jobApplicationRepository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+
+-> Server : (tcp) howMuchJobAppReq
+
+ Server->Server : howMuchJobAppReq(version, code, data)
+ activate Server
+
+
+ Server -> SerializeUtil: deserializeObject(data.get(0))
+
+
+     activate SerializeUtil
+
+      SerializeUtil --> Server: jobOpening
+
+     deactivate SerializeUtil
+
+
+ Server->CTRL: findByJobOpening(jobOpening)
+
+ activate CTRL
+
+
+
+  CTRL->jobApplicationRepository : findByJobOpening(jobOpening)
+
+  activate jobApplicationRepository
+
+  jobApplicationRepository-->CTRL : jobApplications
+
+    deactivate jobApplicationRepository
+
+    CTRL --> Server: jobApplications
+
+
+
+    deactivate CTRL
+
+
+    Server -> SerializeUtil: serialize(jobApplications.size())
+
+
+    activate SerializeUtil
+
+     SerializeUtil --> Server: jobApplicationsData
+
+    deactivate SerializeUtil
+
+ Server->Server : howMuchJobAppResp(version, code, jobApplicationsData)
+ deactivate Server
+
+
+
+
+ <-- Server: (tcp) howMuchJobAppResp
+deactivate Server
+
+
+
+
+@enduml

@@ -1,0 +1,107 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 1019 - As Customer Manager, I want to get an ordered list of candidates, using the job interview points (grades), to help me analyze the candidates" Sequence Diagram
+'hide footbox
+actor "Customer Manager" as CM
+participant ":OrderCandidatesByGradeUI" as UI <<presentation>>
+control ":OrderCandidatesByGradeController" as CTRL <<application>>
+participant ":JobOpeningRepository" as JobOpeningRepository  <<repository>>
+participant ":JobOpening" as JobOpening <<domain>>
+participant ":JobApplicationRepository" as JobApplicationRepository  <<repository>>
+participant ":JobApplication" as JobApplication <<domain>>
+
+activate CM
+ CM -> UI : asks to ordered list of candidates, using the job interview points
+
+ activate UI
+
+      UI -> CTRL** : create
+
+
+      UI -> CTRL : allActiveJobOpeningsByCustomerManager()
+      activate CTRL
+          CTRL-> JobOpeningRepository : allActiveJobOpeningsByCustomerManager()
+
+          activate JobOpeningRepository
+
+          JobOpeningRepository--> CTRL : job openings
+
+          deactivate JobOpeningRepository
+
+          CTRL--> UI : Display list of job openings
+
+      deactivate CTRL
+
+
+      UI --> CM : shows list of all the job openings and asks to select one
+
+  deactivate UI
+
+  CM -> UI : selects a job opening
+  activate UI
+
+  UI->CTRL : getCandidatesAndGradesByJobOpening(jobOpening)
+
+  activate CTRL
+
+  CTRL-> JobApplicationRepository : findByJobOpening(jobOpening)
+
+  activate JobApplicationRepository
+
+  JobApplicationRepository--> CTRL : jobApplications
+
+  deactivate JobApplicationRepository
+
+  loop each jobApplications
+  CTRL-> JobApplication : candidate()
+
+   activate JobApplication
+
+       JobApplication--> CTRL : candidate
+
+     deactivate JobApplication
+
+
+
+   CTRL-> JobApplication: grade()
+
+   activate JobApplication
+
+     JobApplication--> CTRL : grade
+
+   deactivate JobApplication
+
+
+end loop
+      CTRL --> UI : candidateGradeMap
+
+
+
+  deactivate CTRL
+
+   UI->CTRL : OrderListCandidatesAndGrades(candidateGradeMap)
+
+   activate CTRL
+
+   CTRL--> CTRL : OrderListCandidatesAndGrades(candidateGradeMap)
+
+
+   CTRL-->UI : candidateGradeMapOrdered
+deactivate CTRL
+       UI-->UI : displayCandidateGradeMap(candidateGradeMapOrdered)
+
+      UI --> CM : show ordered list of candidates and grades
+
+
+
+
+
+  deactivate UI
+deactivate CM
+
+@enduml

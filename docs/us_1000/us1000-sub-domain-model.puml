@@ -1,0 +1,9 @@
+@startuml
+
+skinparam shadowing false
+
+'left to right direction
+
+class UserDomain{}
+
+@enduml

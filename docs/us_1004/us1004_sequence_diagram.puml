@@ -1,0 +1,218 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1004 - As Customer Manager, I want to edit a job opening."
+'hide footbox
+actor "Costumer Manager" as CM
+participant ":UpdateJobOpeningUI" as UI <<presentation>>
+control ":UpdateJobOpeningController" as CTRL <<application>>
+
+participant ":JobOpeningRepository" as OpeningRepo <<repository>>
+
+participant ":JobOpening" as JO <<domain>>
+participant ":PluginRepository" as PR <<repository>>
+
+participant ":SelectRequirementsUI" as UI2 <<presentation>>
+control ":SelectRequirementsController" as CTRL2 <<application>>
+participant ":SelectInterviewModelUI" as UI3 <<presentation>>
+control ":SelectInterviewModelController" as CTRL3 <<application>>
+
+activate CM
+
+    CM -> UI : asks to edit a job opening
+
+    activate UI
+
+        UI -> CTRL** : create
+        UI -> CTRL : filterCustomersBySystemUser()
+                                             activate CTRL
+                                                 CTRL->OpeningRepo: getJobOpenings()
+                                                 activate OpeningRepo
+                                                 OpeningRepo-->CTRL: openingList
+                                                 deactivate OpeningRepo
+                                                 CTRL-->UI : openingList
+                                             deactivate CTRL
+
+        UI --> CM : show the list of all job openings and request the selection of one
+
+    deactivate UI
+CM->UI: Selects the Job Opening
+activate UI
+loop while !selected.equals("exit")
+UI->CM : requests the property to edit
+deactivate UI
+CM -> UI : Selects the property to edit
+opt !selected.equals("Exit")
+alt selected.equals("Mode") && phaseCompatibility(selected) == true
+activate UI
+UI->UI :selectMode()
+UI --> CM : Shows Mode list (remote, hybrid, onsite...) and asks to select one
+deactivate UI
+CM -> UI : Selects the wanted Mode
+activate UI
+UI -> CTRL : updateMode(jobOpening, mode)
+activate CTRL
+CTRL -> JO : updateMode(mode)
+activate JO
+JO -> CTRL: success
+deactivate JO
+CTRL -> OpeningRepo : save(jobOpening)
+CTRL -> UI: success
+deactivate CTRL
+else selected.equals("ContractType") && phaseCompatibility(selected) == true
+UI -> UI :selectContractType()
+UI --> CM :   Shows Contract Types list (full-time, part-time,...) and asks to select one
+deactivate UI
+CM -> UI : Selects the wanted ContractType
+activate UI
+UI -> CTRL : updateCType(jobOpening, contractType)
+activate CTRL
+CTRL -> JO : updateCType(contractType)
+activate JO
+JO -> CTRL: success
+deactivate JO
+CTRL -> OpeningRepo : save(jobOpening)
+CTRL -> UI: success
+deactivate CTRL
+else selected.equals("Address") && phaseCompatibility(selected) == true
+UI --> CM :   Requests Address Data (street, city, state, zip-code)
+deactivate UI
+CM -> UI : Types requested data
+activate UI
+UI -> CTRL : updateAddress(jobOpening, address)
+activate CTRL
+CTRL -> JO : updateAddress(address)
+activate JO
+JO -> CTRL: success
+deactivate JO
+CTRL -> OpeningRepo : save(jobOpening)
+CTRL -> UI: success
+deactivate CTRL
+else selected.equals("Description") && phaseCompatibility(selected) == true
+UI --> CM :   Requests Description
+deactivate UI
+CM -> UI : Types requested data
+activate UI
+UI -> CTRL : updateDescription(jobOpening, description)
+activate CTRL
+CTRL -> JO : updateDescription(description)
+activate JO
+JO -> CTRL: success
+deactivate JO
+CTRL -> OpeningRepo : save(jobOpening)
+CTRL -> UI: success
+deactivate CTRL
+else selected.equals("NumberOfVacancies") && phaseCompatibility(selected) == true
+UI --> CM :   Asks number of vacancies
+deactivate UI
+CM -> UI : Types requested data
+activate UI
+UI -> CTRL : updateNVac(jobOpening, number)
+activate CTRL
+CTRL -> JO : updateNVac(number)
+activate JO
+JO -> CTRL: success
+deactivate JO
+CTRL -> OpeningRepo : save(jobOpening)
+CTRL -> UI: success
+deactivate CTRL
+else selected.equals("JobFunction") && phaseCompatibility(selected) == true
+UI --> CM :   Asks for job function
+deactivate UI
+CM -> UI : Types requested data
+activate UI
+UI -> CTRL : updateJF(jobOpening, function)
+activate CTRL
+CTRL -> JO : updateJF(function)
+activate JO
+JO -> CTRL: success
+deactivate JO
+CTRL -> OpeningRepo : save(jobOpening)
+CTRL -> UI: success
+deactivate CTRL
+else selected.equals("Requirements") && phaseCompatibility(selected) == true
+UI-> UI2 : definePlugin(jobOpening)
+activate UI2
+UI2-> CTRL2** : create
+UI2-> CTRL2 : allRequirements()
+        activate CTRL2
+            CTRL2->PR: findPluginByType(PluginType.REQUIREMENTS)
+            activate PR
+            PR->CTRL2: plugins
+
+            deactivate PR
+
+            CTRL2-->UI2: plugins
+
+                deactivate CTRL2
+
+
+         UI2-->CM: Shows list of the registered Requirement Specifications and asks to select one
+       deactivate UI2
+
+           CM -> UI2 : Selects the wanted Requirements Specification
+       activate UI2
+
+       UI2-> CTRL2 : putRequirement(jobOpening, plugin)
+               activate CTRL2
+
+               CTRL2 -> JO : putRequirementsPlugin(plugin)
+                activate JO
+                JO -> CTRL2: success
+                deactivate JO
+                                CTRL2 -> OpeningRepo : save(jobOpening)
+
+CTRL2 -> UI2: success
+               deactivate CTRL2
+
+UI2 -> UI: success
+               deactivate UI2
+else selected.equals("Interview Model") && phaseCompatibility(selected) == true
+UI-> UI3 : definePlugin(jobOpening)
+ activate UI3
+UI3-> CTRL3** : create
+ UI3-> CTRL3 : allInterviewModel()
+         activate CTRL3
+             CTRL3->PR: findPluginByType(PluginType.INTERVIEW)
+             activate PR
+             PR->CTRL3: plugins
+
+             deactivate PR
+
+             CTRL3-->UI3: plugins
+
+                 deactivate CTRL3
+
+
+         UI3-->CM: Shows list of the registered Interview Models and asks to select one
+       deactivate UI3
+
+
+           CM -> UI3 : Selects the wanted Interview Model
+       activate UI3
+
+       UI3-> CTRL3 : putInterviewModel(jobOpening, plugin)
+               activate CTRL3
+
+               CTRL3 -> JO : putInterviewsPlugin(plugin)
+                activate JO
+                JO -> CTRL3: success
+                deactivate JO
+                CTRL3 -> OpeningRepo : save(jobOpening)
+CTRL3 -> UI3: success
+               deactivate CTRL3
+
+UI3 -> UI: success
+               deactivate UI3
+else phaseCompatibility(selected) == false
+UI -> UI: success = false;
+end
+UI -> CM: displays operation success
+deactivate UI
+deactivate CM
+end
+@enduml

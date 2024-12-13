@@ -1,0 +1,195 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 1010 As Customer Manager, I want to open or close phases of the process for a job opening" Sequence Diagram
+'hide footbox
+actor "Customer Manager" as CM
+participant ":OpenClosePhasesJobOpeningUI" as UI <<presentation>>
+control ":OpenClosePhasesJobOpeningController" as CTRL <<application>>
+participant ":JobOpening" as JobOpening <<domain>>
+participant ":Phase" as Phase <<domain>>
+participant ":JobOpeningRepository" as JobOpeningRepository  <<repository>>
+
+
+activate CM
+
+    CM -> UI : asks to open or close phases for a job opening
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+        UI -> CTRL : allJobOpeningsByCustomerManager()
+        activate CTRL
+            CTRL-> JobOpeningRepository : allJobOpeningsByCustomerManager(currentUser)
+
+            activate JobOpeningRepository
+
+            JobOpeningRepository--> CTRL : listJobOpennings
+
+
+            deactivate JobOpeningRepository
+
+            CTRL--> UI : listJobOpennings
+             deactivate CTRL
+
+            UI-->UI : selectJobOpening(listJobOpennings)
+
+
+
+
+        UI --> CM : shows list of all the job openings and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a job opening
+    activate UI
+
+    UI->CTRL : currentPhase(jobOpening)
+
+    activate CTRL
+
+    CTRL-> JobOpening : currentPhase()
+
+    activate JobOpening
+
+    JobOpening--> CTRL : phase
+
+    deactivate JobOpening
+'
+'     CTRL-> JobOpening : getPhaseOperations(jobOpening, phase)
+'
+'        activate JobOpening
+'
+'        JobOpening--> CTRL : operations/justification
+'
+'        deactivate JobOpening
+
+        CTRL --> UI : phase
+
+
+    deactivate CTRL
+
+    alt phase == null
+
+    UI-->UI: selectOpenApplication
+
+
+
+    UI->CTRL: processOperation(1, jobOpening, PhaseNames.APPLICATION)
+    activate CTRL
+
+    activate CTRL
+            CTRL-->CTRL : getIndex(jobOpening, index)
+
+
+            alt choice = 1
+
+            CTRL--> JobOpening : setPhasesBeginDate(index, today);
+
+            CTRL-> JobOpening : currentPhase(phase)
+            end alt
+
+
+            alt choice = 2
+
+            CTRL--> JobOpening : setPhasesEndDate(index, today);
+
+            CTRL--> JobOpening : setPhasesBeginDate(index+1, today);
+
+            CTRL-> JobOpening : currentPhaseToNextPhase(phase)
+            end alt
+
+
+            alt choice = 3
+            CTRL-->CTRL : canBacktrack(phase, jobOpening)
+
+            CTRL--> JobOpening : setPhasesEndDate(index-1, today);
+
+            CTRL-> JobOpening : currentPhaseToPreviousPhase(phase)
+            end alt
+
+            CTRL-> JobOpeningRepository : save(jobOpening)
+
+            CTRL--> UI : jobOpening
+
+            deactivate CTRL
+
+    deactivate CTRL
+
+     UI--> CM : show sucess message and jobOpening atributes
+
+
+
+
+
+    end alt
+
+        UI-->UI:chooseCloseOpenPhase(phase)
+
+
+        UI --> CM : show current phase and asks to open/close phase or other operations
+
+    deactivate UI
+
+        CM -> UI : open/close phase or other operations
+
+        activate UI
+
+
+
+        UI-> CTRL : processOperation(choice, jobOpening, phase)
+
+
+
+        activate CTRL
+        CTRL-->CTRL : getIndex(jobOpening, index)
+
+
+        alt choice = 1
+
+        CTRL--> JobOpening : setPhasesBeginDate(index, today);
+
+        CTRL-> JobOpening : currentPhase(phase)
+        end alt
+
+
+        alt choice = 2
+
+        CTRL--> JobOpening : setPhasesEndDate(index, today);
+
+        CTRL--> JobOpening : setPhasesBeginDate(index+1, today);
+
+        CTRL-> JobOpening : currentPhaseToNextPhase(phase)
+        end alt
+
+
+        alt choice = 3
+        CTRL-->CTRL : canBacktrack(phase, jobOpening)
+
+        CTRL--> JobOpening : setPhasesEndDate(index-1, today);
+
+        CTRL-> JobOpening : currentPhaseToPreviousPhase(phase)
+        end alt
+
+        CTRL-> JobOpeningRepository : save(jobOpening)
+
+        CTRL--> UI : jobOpening
+
+        deactivate CTRL
+
+
+
+    UI--> CM : show sucess message and jobOpening atributes
+
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

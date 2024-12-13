@@ -1,0 +1,130 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3003 - As Customer, I want to be notified in my application when the state (phase) of my job openings changes." Sequence Diagram
+'hide footbox
+
+
+
+
+participant ":ClientHandler" as Server <<System>>
+control ":NotifyReqController" as CTRL <<application>>
+participant ":AuthorizationService" as AuthorizationService <<service>>
+
+participant ":NotificationService" as Service <<domain>>
+participant ":NotificationDTO" as DTO <<domain>>
+'participant ":JobApplicationRepository" as Repository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+participant ":NotificationRepository" as NotificationRep <<repository>>
+
+-> Server : (tcp) notifyReq
+
+ Server->Server : notifyReq(version, code, data)
+ activate Server
+
+  Server->AuthorizationService : authenticatedUser().email()
+
+  activate AuthorizationService
+
+  AuthorizationService--> Server : email
+
+  deactivate AuthorizationService
+
+
+ Server->CTRL: nofityRep(email)
+
+ activate CTRL
+
+
+
+  CTRL->Service : findByReceiverEmail(email)
+
+  activate Service
+
+'  Service->Repository : findByCandidate(candidate)
+'  activate Repository
+'
+'  Repository--> Service : jobApplicationsList
+'
+'  deactivate Repository
+'
+'  loop each jobApplications
+'
+'  Service-->Repository: getCandidatesNumberForJobOpening(jobOpening)
+'
+'    activate Repository
+'
+'    Repository-->Service: numberOfCandidates
+'
+'    deactivate Repository
+'
+'  Service-->DTO: create()
+'
+'    activate DTO
+'
+'    DTO-->Service: jobApplciationsDTO
+'
+'    deactivate DTO
+'
+'
+'
+'
+'  end loop
+'
+
+  Service-->NotificationRep : findByReceiverEmail(email)
+
+  activate NotificationRep
+
+  NotificationRep-->Service : notificationsList
+
+  deactivate  NotificationRep
+
+  Service->Service : transformToDTO(notificationsList)
+    activate Service
+
+    Service-->DTO**: create()
+
+   Service-->Service : notificationsList
+
+   deactivate Service
+   Service--> CTRL : notificationsList
+
+    deactivate Service
+
+
+  deactivate Service
+
+CTRL-->Server: notificationsList
+
+ deactivate CTRL
+'
+' note right
+'  sugestão:
+'  1. aplicar typed queries
+'  2. "reporting" repositories
+' end note
+
+Server->SerializeUtil: serialize(notificationsList)
+
+activate SerializeUtil
+
+SerializeUtil-->Server: notifyResp
+
+deactivate SerializeUtil
+
+
+ Server-->Server : notifyResp(version, code, data)
+deactivate Server
+
+ <-- Server: (tcp) notifyResp
+
+
+
+
+
+@enduml

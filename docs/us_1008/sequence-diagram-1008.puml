@@ -1,0 +1,64 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+'hide footbox
+actor "Language Engineer" as NM
+participant "ConfigurePluginUI" as UI <<presentation>>
+control ":ConfigurePluginController" as CTRL <<application>>
+participant "PluginType" as PT
+participant ":RepositoryFactory" as Fact <<factory>>
+participant ":PluginRepository" as PluginRepo <<repository>>
+participant "plugin\n:Plugin" as Plugin
+participant ":PluginIdentifier" as PluginIdentifier
+
+activate NM
+   NM -> UI :  asks to configure a new Plugin
+
+    activate UI
+    UI-> CTRL : create()
+    UI -> CTRL: fetchPluginTypes()
+    activate CTRL
+    CTRL -> PT: pluginTypeList()
+    CTRL --> UI: pluginTypeList
+    deactivate CTRL
+
+    UI --> NM: requests the plugin type
+    deactivate UI
+    NM -> UI: selects the plugin type
+    activate UI
+
+    UI --> NM: requests the jar file and description
+    deactivate UI
+    NM -> UI: selects the jar file and provides a description
+    activate UI
+    UI -> CTRL : createPlugin(pluginType, description, pluginMainClassName, jarFileName)
+                        activate CTRL
+CTRL -> Fact: create()
+                        CTRL -> Fact: Plugins()
+                        activate Fact
+                            Fact->PluginRepo: create()
+
+                            deactivate Fact
+                            CTRL->PluginRepo: createPlugin(pluginType, description, pluginMainClassName, jarFileName)
+                            activate PluginRepo
+                            PluginRepo->Plugin: create()
+                            Plugin->PluginIdentifier: create()
+                            Plugin-->PluginRepo: plugin
+                            PluginRepo->PluginRepo: save(plugin)
+                            PluginRepo-->CTRL : operationStatus
+                            deactivate PluginRepo
+                            CTRL-->UI : operationStatus
+                        deactivate CTRL
+
+
+
+        UI --> NM : display operation success
+        deactivate UI
+
+deactivate NM
+
+@enduml

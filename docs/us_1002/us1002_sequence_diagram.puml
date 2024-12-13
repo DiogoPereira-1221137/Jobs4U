@@ -1,0 +1,166 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1002 - Register a job opening" Sequence Diagram
+'hide footbox
+actor "Costumer Manager" as CM
+participant ":RegisterJobOpeningUI" as UI <<presentation>>
+control ":RegisterJobOpeningController" as CTRL <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant "PersistenceContext" as PC <<persistence>>
+participant ":RepositoryFactory" as RF <<persistence>>
+participant ":CustomerRepository" as CR <<repository>>
+participant ":JobOpening" as JO <<domain>>
+
+participant ":JobOpeningRepository" as JOR <<repository>>
+activate CM
+
+    CM -> UI : asks to register a job opening
+
+    activate UI
+
+        UI -> CTRL** : create
+
+          UI -> CTRL : filterCustomerBySystemUser()
+activate CTRL
+          CTRL->AR : authorizationService()
+           activate AR
+           AR->AUTHS : create()
+
+
+                                  AR-->CTRL : authz
+                                  deactivate AR
+
+
+
+
+            CTRL->PC:repositories()
+                activate PC
+                PC->RF : customers()
+
+
+                activate RF
+                RF->CR:create()
+
+
+                RF --> PC : customerRepository
+                deactivate RF
+                PC-->CTRL : customerRepository
+                deactivate PC
+
+                CTRL->CR:findAll()
+                activate CR
+
+                CR --> CTRL : allCustomers
+                deactivate CR
+
+                deactivate CR
+
+        CTRL --> UI : filteredCustomers
+
+deactivate CTRL
+UI -> UI : displayCustomerMenu
+        deactivate CTRL
+
+
+        UI --> CM : Shows company list and asks to select one
+        deactivate UI
+        CM -> UI : Selects the wanted company
+        activate UI
+
+
+        UI --> CM : Requests typed data (Number of Vacancies and Job Function)
+
+    deactivate UI
+
+CM -> UI : Types the requested data
+activate UI
+UI->UI :selectMode()
+UI --> CM : Shows Mode list (remote, hybrid, onsite...) and asks to select one
+deactivate UI
+CM -> UI : Selects the wanted Mode
+activate UI
+UI -> UI :selectContractType()
+UI --> CM :   Shows Contract Types list (full-time, part-time,...) and asks to select one
+deactivate UI
+CM -> UI : Selects the wanted ContractType
+activate UI
+
+
+UI --> CM : Requests typed data( Address (street, city, state, country, zip-code), Description)
+deactivate UI
+CM -> UI : Types requested data
+activate UI
+
+
+UI -> CTRL : getLastJobReference()
+activate CTRL
+CTRL->PC:repositories()
+                activate PC
+                PC->RF : jobOpenings()
+
+                activate RF
+                RF->CR:create()
+
+
+                RF --> PC : jobOpeningRepository
+                deactivate RF
+                PC-->CTRL : jobOpeningRepository
+                deactivate PC
+
+                CTRL->CR:findAll()
+                activate CR
+
+                CR --> CTRL : jobOpenings
+                deactivate CR
+
+                deactivate CR
+
+
+    deactivate JOR
+CTRL --> UI :lastJobOpeningReference
+deactivate CTRL
+
+UI -> CTRL : generateNextJobReference(lastJobOpeningReference)
+activate CTRL
+
+CTRL --> UI :jobReference
+deactivate CTRL
+
+
+      UI -> CTRL : registerJobOpening(numberOfVacancies, jobFunction, mode,\n contractType, jobReference, address, companyName, description)
+    activate CTRL
+
+    CTRL -> JO : new JobOpening(JobFunction, ContractType, Mode, \nAddress, Company, NumberOfVacancies, Description)
+    activate JO
+
+    JO --> CTRL : jobOpening
+    deactivate JO
+
+    CTRL -> JO : setId(jobReference)
+
+
+CTRL -> JOR : save(jobOpening)
+activate JOR
+
+JOR -->CTRL : jobOpening
+deactivate JOR
+        deactivate RF
+
+CTRL --> UI :  jobOpening
+deactivate CTRL
+        UI --> CM : display operation success and the data of the Job Opening created
+
+    deactivate UI
+
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

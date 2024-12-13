@@ -1,0 +1,92 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor CustomerManager as Actor
+participant ":GenerateInterviewModelUI" as UI <<presentation>>
+control ":GenerateInterviewModelController" as Controller <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant "PersistenceContext" as Persistence <<persistence>>
+participant ":RepositoryFactory" as RepositoryFactory <<persistence>>
+participant ":JobOpeningRepository" as Repository <<repository>>
+
+
+activate Actor
+    Actor -> UI : Generate Interview Model Template
+        activate UI
+
+
+
+
+
+    UI-> Controller** : create
+
+     UI-> Controller : allJobOpenings()
+    activate Controller
+
+
+       Controller->AR : authorizationService()
+      activate AR
+      AR->AUTHS : create()
+
+
+     AR-->Controller : authz
+     deactivate AR
+
+         Controller->Persistence:repositories()
+         activate Persistence
+         Persistence->RepositoryFactory:jobOpenings()
+         activate RepositoryFactory
+         RepositoryFactory->Repository:create()
+         RepositoryFactory-->Persistence : jobOpeningRepository
+         deactivate RepositoryFactory
+         Persistence-->Controller : jobOpeningRepository
+
+
+        deactivate Persistence
+
+        deactivate RepositoryFactory
+
+        Controller->Repository: jobOpenings()
+        activate Repository
+        Repository-->Controller: allJobOpenings
+        deactivate Repository
+
+        Controller-->UI: allJobOpenings
+    deactivate Controller
+
+
+        UI-->Actor: Show the list of jobOpening to choose
+deactivate UI
+
+    alt option != 0
+        Actor -> UI : Choose a jobOpening
+    activate UI
+
+
+       UI-> Controller : generateInterviewTemplate(jobOpening)
+               activate Controller
+
+               Controller -> Controller: Generate the file and write the template in it
+
+
+
+              Controller-->UI: sucess
+                              deactivate Controller
+
+
+                       UI-->Actor: Show the success message of file created
+                     deactivate UI
+    end
+
+
+
+
+
+@enduml

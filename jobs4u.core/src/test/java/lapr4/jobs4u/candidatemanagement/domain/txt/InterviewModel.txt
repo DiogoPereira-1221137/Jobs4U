@@ -1,0 +1,26 @@
+# Do you have previous experience in project management?
+True/False(True): True
+
+# What is your most relevant professional experience for this position?
+Short Text Answer: Writing in all going fast and run faster.
+
+# What is your proficiency level in English?
+Choice, with Single-Answer(Intermediate): Intermediate
+
+# What programming languages do you know(Java, C, Python, Ruby)
+Choice, with Multiple-Answer(Java, Python, C): Ruby
+
+# How many years of experience do you have in sales?
+Integer Number(2):1
+
+# Can you provide an example of how your work has contributed to revenue growth? What was the growth expressed as a decimal number?
+Decimal Number(0.10): 0.25
+
+# What is the available start date to begin working?
+Date: 28/02/2024
+
+# At what time of day do you feel most productive?
+Time: 12:00
+
+# On a scale from 0-10 how skilled do you consider yourself in solving problems creatively?
+Numeric Scale(6-10): 4

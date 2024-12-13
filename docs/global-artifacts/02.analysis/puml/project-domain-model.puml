@@ -1,0 +1,195 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+'left to right direction
+
+hide circle
+hide methods
+
+
+class Property {
+    price
+    area
+    distanceToCentre
+    photographs
+    date
+    client
+}
+
+
+
+class PropertyType {
+    description
+}
+class Employee{
+
+}
+
+class Store {
+    id
+    designation
+    email
+    phoneNumber
+}
+
+class Client {
+
+}
+
+class Inhabitable {
+    bedroomNumber
+    bathroomNumber
+    parkingSpaces
+    equipmentList
+}
+
+
+
+
+ class Role {
+    id
+    description
+ }
+
+ class Address{
+     streetAddress
+     city
+     state
+     zipCode
+ }
+
+
+ class House {
+ hasBasement
+ hasLoft
+ sunExposure
+ }
+
+
+class Administrator{
+
+}
+
+
+
+class Network
+
+
+class StoreManager {
+
+}
+
+
+
+class Agent {
+
+}
+
+
+class AnnouncementRequest{
+rentDuration
+date
+wasAccepted
+
+}
+
+
+
+
+
+class BusinessType{
+description
+}
+
+
+class Employee{
+
+
+}
+class Client {
+
+}
+
+class Photograph{
+URI
+}
+
+class Person{
+email
+name
+passportNumber
+taxNumber
+phoneNumber
+}
+
+class Commission{
+value
+typeCommission
+
+}
+
+class VisitRequest{
+  property
+  preferredDate
+  timeSlot
+  clientName
+  clientPhoneNumber
+  clientReply
+  agent
+  wasAccepted
+}
+
+class PurchaseOrder {
+    amount
+    wasAccepted
+    creationDate
+}
+
+class Announcement {
+    listedPrice
+    rentDuration
+    agent
+    date
+
+}
+
+
+Property "1" <|-- "1" Inhabitable : has a
+PropertyType "1" -- "1" Property: cataloged as <
+BusinessType "1" -- "*" Announcement: cataloged as <
+Announcement "1" - "1" Property : listed under <
+Announcement "1" -- "*" PurchaseOrder : refers to <
+Announcement "1" -- "1" Commission: has a >
+Employee "1" -- "1..*" Role: has  >
+Property"*" -- "1" Store: listed under >
+Person <|-- Employee
+Employee <|--- Administrator
+AnnouncementRequest "1" -- "1" Agent : sent to >
+Agent "*" -- "0..1" Store: part of >
+Client "1" - "*" Property : creates >
+Inhabitable "1" <|-- "1" House
+Address "1" ----- "1" Property: < has an
+Address "1" --- "1" Store: < has an
+Administrator "1" --- "1..*" Network : register >
+Administrator "1" - "*" Store : creates >
+StoreNetworkManager "1" - "1" Network : manages >
+Network "1" - "1..*" Store : has >
+Store "1" - "1" StoreManager : manages <
+Employee "1" -- "1" Administrator:  created by
+AnnouncementRequest "1" -- "1" Announcement: can become >
+Employee "*" --- "1" Store: works on a <
+Person "1" -- "1" Address: has an >
+AnnouncementRequest "1" -- "1"BusinessType: cataloged as >
+Employee  <|-- Agent
+Employee  <|-- StoreNetworkManager
+Employee  <|-- StoreManager
+VisitRequest "1" -- "1" Property : refers to >
+Client"1" -- "*" AnnouncementRequest: creates >
+Property"1" --- "1..30" Photograph: has >
+Client "1" - "*" VisitRequest : creates >
+Person <|-- Client
+Client "1" -- "*" PurchaseOrder: creates >
+Agent "1" -- "*" Announcement: creates >
+@enduml

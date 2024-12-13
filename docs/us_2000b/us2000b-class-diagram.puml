@@ -1,0 +1,61 @@
+@startuml
+
+title "US2000b - As Operator, I want to enable/disable a candidate."
+
+class EnableDisableCandidateUI{
+- enableCandidateUI() : boolean
+- disableCandidateUI() : boolean
+- displayAndSelectCandidate() : SystemUser
+}
+
+
+class EnableDisableCandidateController{
+
+- userSvc : UserManagementService
+
+
++ allActiveCandidates() : Iterable<SystemUser>
++ allNotActiveCandidates() : Iterable<SystemUser>
++ activateUser(final SystemUser user) : SystemUser
++ deactivateUser(final SystemUser user) : SystemUser
+
+}
+
+class UserManagementService{
+- userRepository : UserRepository
+
++ allActiveCandidates() : Iterable<SystemUser>
++ allNotActiveCandidates() : Iterable<SystemUser>
++ activateUser(final SystemUser user) : SystemUser
++ deactivateUser(final SystemUser user) : SystemUser
+
+}
+
+
+class SystemUser{
+-name : Name
+-email : EmailAddress
+
++email() : EmailAddress
++name() : Name
+}
+
+interface UserRepository{
+findByActiveWhereRollCandidate(boolean active)
+save(SystemUser)
+}
+
+
+
+
+
+EnableDisableCandidateUI ..> EnableDisableCandidateController
+EnableDisableCandidateController ..> UserManagementService
+
+
+UserManagementService ..> UserRepository
+
+
+UserRepository --> "*" SystemUser : stores
+
+@enduml

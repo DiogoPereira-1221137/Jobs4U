@@ -1,0 +1,85 @@
+@startuml
+
+title "US1006 - Display all the personal data of a candidate" Class Diagram
+
+class PhoneNumber{
+-number : String
+}
+
+
+
+class Candidate{
+-systemUser : SystemUser
+-phoneNumber : PhoneNumber
+-id : EmailAddress
+
++user() : SystemUser
++phoneNumber() : PhoneNumber
++getId() : EmailAddress
+}
+
+class EmailAddress{
+- email : String
+}
+
+
+class SystemUser{
+-username : Username
+-name : Name
+-email : EmailAddress
++ identity() : Username
++ email()  : EmailAddress
++ name() : Name
+}
+
+class Name{
+-firstName : String
+    -lastName : String
+    +firstName() : String
+    +lastName() : String
+}
+
+class DisplayCandidateDataUI{
+
++displayCandidatePersonalData(Candidate candidate)
+}
+
+class DisplayCandidateDataController{
++allActiveCandidates()
+}
+
+class PersistenceContext{
++repositories()
+}
+
+interface RepositoryFactory{
+candidates()
+candidates(TransactionalContext autoTx)
+}
+
+
+interface CandidateRepository{
+findAllActive()
+}
+
+Candidate --> SystemUser
+
+SystemUser --> EmailAddress
+SystemUser --> Name
+Candidate --> EmailAddress
+Candidate --> PhoneNumber
+
+DisplayCandidateDataUI ..> DisplayCandidateDataController
+
+DisplayCandidateDataController ..> CandidateRepository
+
+CandidateRepository --> "*" Candidate :stores
+
+DisplayCandidateDataController ..> PersistenceContext
+
+PersistenceContext --> RepositoryFactory
+
+
+RepositoryFactory ..> CandidateRepository
+
+@enduml

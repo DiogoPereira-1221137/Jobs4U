@@ -1,0 +1,97 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US2004 - As Operator, I want to upload a text file with the data fields (requirements ) of a candidate for its verification."
+'hide footbox
+actor "Operator" as CM
+participant ":ImportRequirementsFileUI" as UI <<presentation>>
+control ":ImportRequirementsFileController" as CTRL <<application>>
+participant ":JobOpeningRepository" as OR <<repository>>
+participant ":JobApplicationRepository" as AR <<repository>>
+participant ":JobApplication" as JA
+participant ":JobOpening" as JO
+participant ":ImportFolderReader" as File
+participant "jarClass :jarClass" as JAR <<requirementsInterface>>
+
+
+activate CM
+
+    CM -> UI : asks to select a Job Opening
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+        UI -> CTRL : getJobOpenings()
+        activate CTRL
+        CTRL->OR : getJobOpenings()
+           activate OR
+           OR --> CTRL : openingList()
+           deactivate OR
+           CTRL --> UI : openingList()
+           deactivate CTRL
+
+
+
+
+    UI -> CM: show the list of all job openings and request the selection of one
+
+    deactivate UI
+
+    CM -> UI : selects a jobOpening
+    activate UI
+        UI -> CTRL : getJobApplicationsByOpening(jobOpening)
+        activate CTRL
+        CTRL->AR : findByJobOpening(jobOpening)
+           activate AR
+           AR --> CTRL : applicationList()
+           deactivate AR
+           CTRL --> UI : applicationList()
+           deactivate CTRL
+        UI --> CM : show the list of all job applications made to the selected job opening and request the selection of one
+
+    deactivate UI
+
+    CM -> UI : selects a jobApplication
+    activate UI
+    UI -> File : getFilesFromImportFolder()
+    activate File
+           File --> UI : fileList()
+           deactivate File
+        UI --> CM : show the list of files and request the selection of one
+
+    deactivate UI
+
+    CM -> UI : selects a file
+    activate UI
+    UI -> CTRL : validateAndAddFile(file, jobApplication, jobOpening)
+    activate CTRL
+    CTRL -> JO : getRequirementsPlugin()
+    activate JO
+    JO --> CTRL: requirementsPlugin
+    deactivate JO
+    CTRL -> JAR** : create
+    CTRL -> JAR: antlr(file)
+    activate JAR
+    JAR --> CTRL : valid
+    deactivate JAR
+    CTRL -> JA : addFile(file)
+    activate JA
+    JA --> CTRL : success
+    deactivate JA
+    CTRL --> UI : success
+    deactivate CTRL
+    UI --> CM : success
+    deactivate UI
+
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

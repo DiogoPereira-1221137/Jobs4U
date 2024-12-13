@@ -1,0 +1,81 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 3002 - List all my job openings in the App" Sequence Diagram
+'hide footbox
+actor "Candidate" as C
+
+participant ":ListJobOpeningAppUI" as UI <<presentation>>
+control ":ListJobOpeningAppController" as CTRL <<application>>
+participant ":TCPServer" as Server <<System>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+
+
+activate C
+
+        C -> UI : Asks to list all the JobOpenings notifications
+
+        activate UI
+        UI -> CTRL** : create
+
+        UI-> CTRL: fetchJobOpenings( input, output)
+
+        activate CTRL
+        CTRL -> Server : (tcp) jobOpReq
+
+
+         activate Server
+         Server--> CTRL : (tcp) jobOpResp
+        deactivate Server
+
+        CTRL --> UI : message
+        deactivate CTRL
+
+        UI -> SerializeUtil: deserializeList(message.data.get(0))
+        activate SerializeUtil
+
+        SerializeUtil --> UI : jobOpenings
+        deactivate SerializeUtil
+
+
+
+        loop for each JobOpening jobOpening in jobOpenings)
+
+        UI -> SerializeUtil: serialize(jobOpening)
+                activate SerializeUtil
+
+                SerializeUtil --> UI : jobOpeningData
+                deactivate SerializeUtil
+
+        UI-> CTRL: howMuchJobApplications( input, output, jobOpeningData)
+
+        activate CTRL
+        CTRL -> Server : (tcp) howMuchJobAppReq
+
+
+         activate Server
+         Server--> CTRL : (tcp) howMuchJobAppResp
+        deactivate Server
+
+        CTRL --> UI : message2
+                deactivate CTRL
+
+         UI -> SerializeUtil: deserializeObject(message2.data.get(0))
+        activate SerializeUtil
+
+        SerializeUtil --> UI : numberOfApplication
+        deactivate SerializeUtil
+
+
+        UI-->C : Shows all job openings associated with this customer
+
+       deactivate UI
+       end
+
+deactivate C
+
+@enduml

@@ -1,0 +1,116 @@
+@startuml
+
+skinparam shadowing false
+
+'left to right direction
+
+
+
+
+
+
+
+
+
+
+
+package "Job Opening Aggregate"{
+
+    class "«entity»\nRecruitmentProcess" as RecruitmentProcess{
+        HasInterviewPhase
+    }
+
+
+     class "«entity»\nPhase" as Phase{
+         description
+         beginDate
+         finalDate
+     }
+
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+
+    }
+
+    class "«value object»\nSetupStatus" as SetupStatus {
+    }
+
+    class "«value object»\nRequirementsStatus" as  RequirementsStatus{
+    }
+
+    class "«value object»\nInterviewPhaseStatus" as InterviewPhaseStatus{
+    }
+
+     class "«value object»\nContractType" as ContractType{
+     }
+
+    class "«value object»\nMode" as Mode{
+        description
+    }
+
+    class "«value object»\nJobFunction" as JobFunction{
+         description
+    }
+
+    class "«value object»\n NumberOfVacancies" as  NumberOfVacancies{
+
+    }
+
+    class "«value object»\nDescription" as Description{
+         description
+    }
+
+
+    class "«value object»\nAddress" as Address1{
+        Street
+        City
+        State
+        Country
+        Zipcode
+    }
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+}
+
+
+
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class Status{
+    }
+
+
+
+    class "«value object»\nCurriculum" as Curriculum{
+    }
+
+
+    class "«value object»\n«calculated»\nGrade" as Grade2{}
+
+}
+
+
+JobApplication"1"-->"1" Curriculum : includes
+Mode "1" <-- "1"JobOpening : includes
+JobFunction "1" <-- "1"JobOpening : includes
+NumberOfVacancies "1" <-- "1"JobOpening : includes
+Description "1" <-- "1"JobOpening : includes
+Address1"1" <-- "1"JobOpening : includes
+ContractType "1" <--"1" JobOpening : includes
+JobOpening "1"-->"1" JobReference : includes
+
+JobOpening --> SetupStatus
+JobOpening --> RequirementsStatus
+JobOpening --> InterviewPhaseStatus
+JobApplication --> Status
+JobApplication --> "0..1" Grade2
+JobOpening "1"<-"*"JobApplication : refers to
+RecruitmentProcess "1" *--"4..5" Phase :part of
+JobOpening "1" --> "1"RecruitmentProcess :includes
+@enduml

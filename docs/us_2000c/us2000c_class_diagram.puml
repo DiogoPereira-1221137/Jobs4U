@@ -1,0 +1,75 @@
+@startuml
+title "US2000c - List all Candidates" Sequence Diagram
+
+class PersistenceContext{
++repositories()
+}
+
+interface RepositoryFactory{
+candidates()
+candidates(TransactionalContext autoTx)
+
+}
+
+class Candidate{
+-systemUser : SystemUser
+-phoneNumber : PhoneNumber
+-id : EmailAddress
+
++user() : SystemUser
++phoneNumber() : PhoneNumber
++getId() : EmailAddress
+}
+
+class EmailAddress{
+- email : String
+}
+
+class PhoneNumber{
+-number : String
+}
+
+interface CandidateRepository{
+findAllActive()
+}
+
+class Name {
+    -firstName : String
+    -lastName : String
+    +firstName() : String
+    +lastName() : String
+
+}
+
+class SystemUser{
+-username : Username
+-name : Name
+-email : EmailAddress
++ identity() : Username
++ email()  : EmailAddress
++ name() : Name
+}
+
+class ListAllCandidatesController{
++allActiveCandidates()
+}
+
+class ListAllCandidatesUI{}
+
+ListAllCandidatesController ..> PersistenceContext
+
+PersistenceContext --> RepositoryFactory
+RepositoryFactory ..> CandidateRepository
+ListAllCandidatesUI ..> ListAllCandidatesController
+
+ListAllCandidatesController ..> CandidateRepository
+
+CandidateRepository --> "*" Candidate :stores
+Candidate --> SystemUser
+
+SystemUser --> EmailAddress
+SystemUser --> Name
+Candidate --> EmailAddress
+Candidate --> PhoneNumber
+
+@enduml

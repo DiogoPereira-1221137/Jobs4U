@@ -1,0 +1,158 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package "Candidate Aggregate"{
+    class "«root»\n«entity»\nCandidate" as Candidate{
+
+    }
+    note as EmailCandidate
+                      Identifire
+                     end note
+
+
+    class "Name" as Name {
+        firstName
+        lastName
+    }
+
+    class "«value object»\nPhoneNumber" as PhoneNumber{
+    phoneNumber
+    }
+
+     class "«value object»\nE-Mail" as EMail{
+     email
+     }
+
+}
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class "«value object»\nStatus" as Status{
+    }
+
+
+
+    class "«value object»\nCurriculum" as Curriculum{
+    }
+
+
+    class "«value object»\n«calculated»\nGrade" as Grade2{}
+
+}
+
+
+class UserDomain{
+}
+
+package "Job Opening Aggregate"{
+
+    class "«entity»\nRecruitmentProcess" as RecruitmentProcess{
+        HasInterviewPhase
+    }
+
+
+     class "«entity»\nPhase" as Phase{
+         beginDate
+         finalDate
+     }
+
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+
+    }
+
+    class "«value object»\nSetupStatus" as SetupStatus {
+    }
+
+    class "«value object»\nRequirementsStatus" as  RequirementsStatus{
+    }
+
+    class "«value object»\nInterviewPhaseStatus" as InterviewPhaseStatus{
+    }
+
+     class "«value object»\nContractType" as ContractType{
+     }
+
+    class "«value object»\nMode" as Mode{
+        description
+    }
+
+    class "«value object»\nJobFunction" as JobFunction{
+         description
+    }
+
+    class "«value object»\n NumberOfVacancies" as  NumberOfVacancies{
+
+    }
+
+    class "«value object»\nDescription" as Description{
+         description
+    }
+
+
+    class "«value object»\nAddress" as Address1{
+        Street
+        City
+        State
+        Country
+        Zipcode
+    }
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+}
+
+package "Plugin Aggregate"{
+    class  "«root»\n«entity»\nPlugin" as Plugin{
+    }
+    class "«value object»\n«identifier»\nPluginIdentifier" as PlugID{
+    }
+    class "«value object»\nPluginType" as PlugType{
+    }
+    class "«value object»\nPluginMainClassName" as PlugClass{
+    }
+    class "«value object»\nJarFileName" as JarFile{
+    }
+    class "«value object»\nDescription" as PlugDesc{
+    }
+}
+
+Plugin"1" -->"1" PlugClass : includes
+Plugin"1" -->"1" JarFile : includes
+Plugin "1"--> "1"PlugDesc : includes
+Plugin "1" --> "1" PlugID : identified by
+Plugin"1" --> "1" PlugType : has a
+Plugin "0..2" <-- "1" JobOpening : includes
+
+
+EmailCandidate.EMail
+Candidate "1"-->"1" EMail :identified by
+PhoneNumber "1"<-"1" Candidate :has
+Candidate"1" --> "1" Name : has
+
+Candidate "1"..>"1" UserDomain
+
+JobApplication"1"-->"1" Curriculum : includes
+JobApplication --> "0..1" Grade2 : includes
+JobApplication "1"-->"1" Status : has
+JobApplication "1" -> "1" Candidate :refers to
+
+Mode "1" <-- "1"JobOpening : includes
+JobFunction "1" <-- "1"JobOpening : includes
+NumberOfVacancies "1" <-- "1"JobOpening : includes
+Description "1" <-- "1"JobOpening : includes
+Address1"1" <-- "1"JobOpening : includes
+ContractType "1" <--"1" JobOpening : includes
+JobOpening "1"-->"1" JobReference : includes
+JobOpening "1"-->"1" SetupStatus : includes
+JobOpening "1"-->"1" RequirementsStatus : includes
+JobOpening "1"-->"1" InterviewPhaseStatus : includes
+JobApplication "*"->"1"JobOpening : refers to
+JobOpening "1" --> "1"RecruitmentProcess :includes
+RecruitmentProcess "1" *--"4..5" Phase :part of
+
+@enduml

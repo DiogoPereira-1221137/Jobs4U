@@ -1,0 +1,125 @@
+@startuml
+
+title "US 2000a  As Operator, I want to register a candidate and create a corresponding user
+
+class "RegisterCandidateUI" as UI{
+}
+
+class PersistenceContext{
+    repositories()
+}
+
+class "RegisterCandidateController" as Controller{
+   +registerCandidate(email, password, firstName, lastName, phoneNumber, roles) : SystemUser
+   +addUser(email, password, firstName, lastName, roles, createdOn) : SystemUser
+   +generatePassword() : String
+}
+
+interface "RepositoryFactory" as Factory{
+    candidates();
+    candidates(TransactionalContext tx)
+    users()
+    users(TransactionalContext autoTx)
+}
+
+class EventPublisher{
+    dispatcher
+}
+
+class RegisterCandidateEvent{
+    - theRegisterRequest : SystemUser
+    - phoneNumber : String
+
+    +phoneNumber() : PhoneNumber
+    +getTheRegisterRequest() : SystemUser
+}
+
+
+class RegisterCandidateWatchDog{
+    + onEvent(domainevent)
+}
+
+class RegisterCandidateOnEventController{
+    +registerCandidate(event) : Candidate
+    +findUser(final RegisterCandidateEvent event) : boolean
+}
+
+class DeleteUserEvent{
+    - theRegisterRequest : SystemUser
+}
+
+
+
+
+class UserManagementService{
+- userRepository : UserRepository
+- encoder : PasswordEncoder
+- policy : PasswordPolicy
+
++registerNewUser(final String username, final String rawPassword, final String firstName, \nfinal String lastName, final String email, final Set<Role> roles,
+final Calendar createdOn) : SystemUser
++registerNewUser(final String username, final String rawPassword, final String firstName,
+ final String lastName, final String email, final Set<Role> roles) : SystemUser
++ registerUser(final Username username, final Password password, final Name name,
+final EmailAddress email, final Set<Role> roles) : SystemUser
++ activeUsers() : Iterable<SystemUser>
++ deactivatedUsers() : Iterable<SystemUser>
++ activateUser(final SystemUser user) : SystemUser
++ deactivateUser(final SystemUser user) : SystemUser
++ allUsers() : Iterable<SystemUser>
+
+}
+
+
+interface UserRepository{
+findByActive(boolean active)
+save(SystemUser)
+}
+
+interface CandidateRepository{
+    +candidates();
+}
+
+
+
+class Candidate{
+    - systemUser : SystemUser
+    - phoneNumber : PhoneNumber
+    - id : EmailAddress
+}
+
+
+
+
+
+
+
+
+
+UI ..> Controller
+Controller ..> PersistenceContext
+PersistenceContext-->Factory
+
+
+Factory ..> CandidateRepository
+
+
+CandidateRepository --> "*" Candidate :stores
+
+
+Controller ..> CandidateRepository
+Controller -> UserManagementService
+Controller --> EventPublisher
+EventPublisher "1" -> "*" RegisterCandidateEvent : publishes
+EventPublisher "1" --> "*" DeleteUserEvent : publishes
+
+
+RegisterCandidateWatchDog --> RegisterCandidateOnEventController
+RegisterCandidateEvent <-- RegisterCandidateWatchDog : watch for event
+RegisterCandidateOnEventController ..> CandidateRepository
+
+UserManagementService ..> UserRepository
+Factory ..> UserRepository
+
+
+@enduml

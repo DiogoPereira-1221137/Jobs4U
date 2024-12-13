@@ -1,0 +1,65 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 30013- As Customer, I want to be notified in my application when the state (phase) of my job openings changes"
+
+actor "Customer" as C
+
+participant ":NotifCustomerUI" as UI <<presentation>>
+control ":NotifCustomerController" as CTRL <<application>>
+participant ":TCPServer" as Server <<System>>
+
+activate C
+
+    C -> UI : asks to see notifications
+
+
+        activate UI
+        UI -> CTRL** : create
+
+        UI-> CTRL: notifyReq()
+
+        activate CTRL
+        CTRL -> Server : (tcp) notifyReq
+
+
+         activate Server
+         Server--> CTRL : (tcp) notifyResp
+        deactivate Server
+
+        CTRL --> UI : notifyResp
+        deactivate CTRL
+
+        UI--> C : show list of notifications
+
+        deactivate UI
+
+        C->UI : choose notification
+
+        activate UI
+
+
+        UI-> CTRL: markNotification(select)
+
+        activate CTRL
+        CTRL -> Server : (tcp) maskAsReadRep
+
+
+         activate Server
+         Server--> CTRL : (tcp) maskAsReadResp
+        deactivate Server
+
+        CTRL --> UI : message
+        deactivate CTRL
+
+        UI-->C :shows list of notifications
+
+       deactivate UI
+
+deactivate C
+
+@enduml

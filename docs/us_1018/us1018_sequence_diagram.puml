@@ -1,0 +1,98 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1016 - Execute the process that evaluates(grades) the interviews for a Job Opening " Sequence Diagram
+'hide footbox
+actor "Customer Manager" as CM
+participant ":EvaluateInterviewsUI" as UI <<presentation>>
+control ":EvaluateInterviewsController" as CTRL <<application>>
+participant ":JobOpeningRepository" as JOR  <<repository>>
+participant ":JobApplicationRepository" as JAR  <<repository>>
+participant "jarClass :jarClass" as JARC <<requirementsInterface>>
+participant ":JobOpening" as JobOpening <<domain>>
+participant ":JobApplication" as JobApplication <<domain>>
+participant ":ApplicationFile" as ApplicationFile <<domain>>
+
+activate CM
+
+    CM -> UI : asks to evaluate an Interview for a Job Opening
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+        UI -> CTRL : findAllActiveJobOpeningsWithInterview()
+
+    activate CTRL
+               CTRL-> JOR : findAllActiveJobOpeningsInInterviewPhaseByCustomerManager(currentUser)
+
+               activate JOR
+
+               JOR--> CTRL : jobOpenings
+
+               deactivate JOR
+
+               CTRL--> UI : jobOpenings
+
+           deactivate CTRL
+
+        UI --> CM : shows list of all the job openings with the interview phase\n that are currently in the Interview Phase and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a job opening
+    activate UI
+
+        UI->CTRL : findAllAcceptedJobApplicationsWithAnswersFileByJobOpening(selectedJobOpening)
+        activate CTRL
+
+        CTRL-> JAR : findAcceptedApplicationsByJobOpening(selectedJobOpening)
+
+                activate JAR
+
+               JAR--> CTRL : jobApplications
+
+               deactivate JAR
+
+               CTRL->UI: jobApplications
+
+               deactivate CTRL
+
+UI --> CM : shows list of all the approved job applications for that Job Opening and asks to select one
+deactivate UI
+
+CM -> UI : selects a job application
+activate UI
+        loop jobApplication
+
+
+
+        UI->CTRL: evaluateInterview(selectedJobOpening, jobApplication, interviewFilePath)
+                activate CTRL
+
+                    CTRL -> JARC** : create
+                    CTRL -> JARC: evaluateInterview(interviewFilePath)
+                    activate JARC
+
+                    JARC --> CTRL : grade
+                    deactivate JARC
+
+                     CTRL->JobApplication:new Grade(grade)
+                     CTRL -> JAR : save(jobApplication)
+       end loop
+               CTRL-->UI: success message
+
+        deactivate CTRL
+
+        UI --> CM : shows success message
+
+    deactivate UI
+
+deactivate CM
+
+@enduml

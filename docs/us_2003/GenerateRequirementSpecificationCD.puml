@@ -1,0 +1,143 @@
+@startuml
+
+title "US2003 - Generate Requirement Specification" Class Diagram
+
+
+class "GenerateRequirementSpecificationUI" as UI{
+
+}
+
+class PersistenceContext{
+    repositories()
+}
+
+class "GenerateRequirementSpecificationController" as Controller{
+    +allJobOpenings() : Iterable<JobOpening>
+    +generateRequirementSpecificationTemplate(jobOpening) : void
+}
+
+interface "RepositoryFactory" as Factory{
+    jobOpenings();
+    jobOpenings(TransactionalContext tx)
+}
+
+
+interface JobOpeningRepository{
+    jobOpenings();
+
+}
+
+class JobOpening {
+ -jobReference : JobReference
+ -numberOfVacancies : NumberOfVacancies
+ -jobFunction : JobFunction
+ -contractType : ContractType
+ -mode : Mode
+ -address : Address
+ -companyName : Customer
+ -description :Description
+ -registrationDate : Calendar
+ -recruitmentProcess : RecruitmentProcess
+ -requirementsPlugin : Plugin
+ -interviewPlugin : Plugin
+
+
+ +jobReference() : JobReference
+ +jobFunction() : JobFunction
+ +contractType() : ContractType
+ +mode() : Mode
+ +address() : Address
+ +companyName() : Customer
+ +description() : Description
+ +registrationDate() : Calendar
+ +setId(JobReference jobReference)
+ +recruitmentProcess() : RecruitmentProcess
+ +putRequirementsPlugin(Plugin requirementsPlugin) : requirementsPlugin
+ +putInterviewPlugin(Plugin interviewPlugin) : interviewPlugin
+ +requirementsPlugin() : requirementsPlugin
+ +interviewPlugin() : interviewPlugin
+
+ }
+
+ class JobReference{
+     - jobReference : Integer
+ }
+
+ class JobFunction{
+     - jobDescription : String
+ }
+
+ class NumberOfVacancies{
+     - number : Integer
+ }
+
+ class ContractType{
+     - contractType : String
+ }
+
+
+ class Mode{
+  -modeDescription : String
+ }
+
+ class Description{
+     - description : String
+ }
+
+ class Plugin{
+    - pluginID : PluginIdentifier
+    - pluginType : PluginType
+    - description : Description
+    - pluginMainClassName : PluginMainClassName
+    - jarFileName : JarFileName
+
+ }
+
+ class Customer{
+     - systemUser : SystemUser
+     - code : Code
+     - address : Address
+     - customerManager : SystemUser
+ }
+
+ class RecruitmentProcess{
+     - hasInterview : boolean
+     - phases : List<Phase>
+ }
+
+
+ class Address{
+     - street : String
+     - city : String
+     - state : String
+     - country : String
+     - zipcode : String
+
+     - validateZipcode(zipcode) : boolean
+ }
+
+UI ..> Controller
+
+Controller ..> PersistenceContext
+Controller ..> JobOpeningRepository
+
+PersistenceContext->Factory
+Factory ..> JobOpeningRepository
+
+JobOpeningRepository --> "*" JobOpening :stores
+
+
+JobOpening --> Address
+JobOpening --> Mode
+JobOpening --> Customer
+JobOpening --> ContractType
+JobOpening --> JobFunction
+JobOpening --> JobReference
+JobOpening --> Description
+JobOpening --> NumberOfVacancies
+JobOpening --> RecruitmentProcess
+JobOpening --> "0..2" Plugin
+
+
+
+@enduml

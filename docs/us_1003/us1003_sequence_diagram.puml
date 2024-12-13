@@ -1,0 +1,152 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1003 - List Job Opening" Sequence Diagram
+
+'hide footbox
+actor "Costumer Manager" as CM
+participant ":ListJobOpeningUI" as UI  <<presentation>>
+control ":ListJobOpeningController" as CTRL  <<application>>
+participant "AuthzRegistry" as AR <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+
+
+participant "PersistenceContext" as PC <<persistence>>
+participant ":RepositoryFactory" as RF <<persistence>>
+
+participant ":JobOpeningRepository" as JOR <<repository>>
+participant ":CustomerRepository" as CR <<repository>>
+activate CM
+
+    CM -> UI : asks to list job openings
+
+    activate UI
+
+        UI -> CTRL** : create
+        UI --> CM : Shows options to filter the job Openings (1. Show all Job Openings; \n2. Filter by Customer; 3.Filter by Registration Date) and asks to select one
+        deactivate UI
+        CM -> UI : selects way to filter job Openings
+        activate UI
+
+
+
+
+alt "filterOption = 1. Show All Job Openings "
+
+
+
+                UI -> CTRL : allJobOpenings()
+
+                activate CTRL
+                CTRL->AR : authorizationService()
+                           activate AR
+                           AR->AUTHS : create()
+
+                           AR-->CTRL : authz
+                           deactivate AR
+
+            CTRL->PC:repositories()
+            activate PC
+            PC->RF : jobOpenings()
+
+            activate RF
+            RF->JOR:create()
+
+            RF --> PC : jobOpeningRepository
+            deactivate RF
+            PC-->CTRL : jobOpeningRepository
+            deactivate PC
+        CTRL -> JOR : jobOpenings()
+        activate JOR
+
+        JOR --> CTRL :allJobOpenings
+        deactivate JOR
+                deactivate RF
+
+        CTRL --> UI : allJobOpenings
+                deactivate CTRL
+
+else  "filterOption = 2. Filter Job Openings By Customer "
+
+
+UI -> CTRL :filterCustomersBySystemUser()
+
+activate CTRL
+
+
+CTRL->PC:repositories()
+                activate PC
+                PC->RF : customers()
+
+
+                activate RF
+                RF->CR:create()
+
+
+                RF --> PC : customerRepository
+                deactivate RF
+                PC-->CTRL : customerRepository
+                deactivate PC
+
+        CTRL -> JOR : findAll()
+        activate JOR
+
+        JOR --> CTRL :allCustomers
+        deactivate JOR
+
+CTRL --> UI : filteredCustomers
+deactivate CTRL
+
+UI -> UI : displayCustomerMenu(customers)
+
+                UI -> CTRL : filterJobOpeningsByCustomer(customer)
+
+                activate CTRL
+
+
+        CTRL -> JOR : findAll()
+        activate JOR
+
+        JOR --> CTRL :allJobOpenings()
+        deactivate JOR
+                deactivate RF
+
+        CTRL --> UI : filteredJobOpenings
+                deactivate CTRL
+else  "filterOption = 3. Filter Job Openings By Registration Date "
+                UI -> CTRL : filterJobOpeningsByRegistrationDate(registrationDate)
+
+                activate CTRL
+CTRL->PC:repositories()
+            activate PC
+            PC->RF : jobOpenings()
+
+            activate RF
+            RF->JOR:create()
+
+            RF --> PC : jobOpeningRepository
+            deactivate RF
+            PC-->CTRL : jobOpeningRepository
+            deactivate PC
+
+        CTRL -> JOR : findAll()
+        activate JOR
+
+        JOR --> CTRL :allJobOpenings()
+        deactivate JOR
+                deactivate RF
+
+        CTRL --> UI : jobOpenings
+                deactivate CTRL
+
+end
+
+        UI --> CM : shows job opening list following the filter option chosen
+    deactivate UI
+deactivate CM
+
+@enduml

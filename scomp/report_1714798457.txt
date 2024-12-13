@@ -1,0 +1,5 @@
+../import/2/2-big-file1.txt
+../import/2/2-candidate-data.txt
+../import/2/2-cv.txt
+../import/2/2-email.txt
+../import/2/2-letter.txt

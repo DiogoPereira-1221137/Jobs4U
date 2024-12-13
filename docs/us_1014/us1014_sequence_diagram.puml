@@ -1,0 +1,181 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US1014 - Record the time and date for an interview with a candidate" Sequence Diagram
+'hide footbox
+actor "Customer Manager" as CM
+participant ":RecordTimeDateForInterviewUI" as UI <<presentation>>
+control ":RecordTimeDateForInterviewController" as CTRL <<application>>
+participant ":JobOpeningRepository" as JOR <<repository>>
+participant ":JobApplicationRepository" as JAR <<repository>>
+participant ":InterviewRepository" as IR <<repository>>
+participant ":Interview" as I <<domain>>
+
+
+activate CM
+
+    CM -> UI : asks to record the time and date for an interview with a candidate
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+
+ UI -> CTRL : findAllJobOpeningsWithInterview()
+ activate CTRL
+
+
+    deactivate JOR
+
+    CTRL -> JOR : findAllActiveJobOpeningsWithInterviewByCustomerManager(currentUser)
+        activate JOR
+
+        JOR --> CTRL :jobOpenings
+        deactivate JOR
+
+            CTRL --> UI : jobOpenings
+        deactivate CTRL
+
+
+
+
+
+        UI --> CM : shows a list of all the job openings that have\n the Interview phase and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a job opening
+    activate UI
+
+ UI -> CTRL : getAcceptedJobApplicationsByJobOpening(selectedJobOpening)
+ activate CTRL
+
+    CTRL -> JAR : findAcceptedApplicationsByJobOpening(jobOpening)
+    activate JAR
+
+    JAR --> CTRL : jobApplications
+    deactivate JAR
+
+            CTRL --> UI : jobApplications
+        deactivate CTRL
+
+
+        UI --> CM : list of candidates who applied for that job opening\n and whose application was accepted at the\n screening phase and asks to select one
+
+    deactivate UI
+
+ CM -> UI : selects a candidate
+    activate UI
+
+UI -> CTRL : indInterviewsByJobApplication(selectedCandidate)
+activate CTRL
+
+CTRL -> IR : findAllActiveJobOpeningsWithInterviewByCustomerManager(currentUser)
+        activate IR
+
+        IR --> CTRL :existingInterviews
+        deactivate IR
+
+            CTRL --> UI : existingInterviews
+        deactivate CTRL
+
+alt !existingInterviews.isEmpty()
+UI --> CM : shows the appointment made for that \nJob Opening and Job Application. Shows a menu and \nasks the user to select one (the options are 1.update \nthe interview appointment or 0.exit)
+
+    deactivate UI
+
+     CM -> UI : selects option
+        activate UI
+        alt choice=1
+
+    UI --> CM : asks to type the wanted date and hour
+
+        deactivate UI
+
+    CM -> UI : types the  wanted date and time
+         activate UI
+
+ UI -> CTRL : findEqualInterview(selectedJobOpening,date,hour)
+ activate CTRL
+
+    CTRL -> IR : findEqual(jobOpening, date, hour)
+    activate IR
+
+ IR --> CTRL : interviews
+    deactivate IR
+
+            CTRL --> UI : interviews
+        deactivate CTRL
+alt !findEqualInterview(selectedJobOpening,date,hour).iterator().hasNext()
+         UI -> CTRL : updateInterview(existingInterview, date, hour)
+         activate CTRL
+
+CTRL -> I : setDate(date)
+CTRL -> I : setHour(hour)
+            CTRL -> IR : save(existingInterview)
+            activate IR
+
+
+         IR --> CTRL : existingInterview
+            deactivate IR
+
+                    CTRL --> UI : existingInterview
+                deactivate CTRL
+                end alt
+
+end alt
+        else existingInterviews.isEmpty()
+
+        UI --> CM : asks to type the wanted date and hour
+
+            deactivate UI
+
+             CM -> UI : types the wanted date and hour
+                activate UI
+
+                UI -> CTRL : findEqualInterview(selectedJobOpening,date,hour)
+                 activate CTRL
+
+
+    CTRL -> IR : findEqual(jobOpening, date, hour)
+    activate IR
+
+ IR --> CTRL : interviews
+    deactivate IR
+                            CTRL --> UI : interviews
+                        deactivate CTRL
+alt !findEqualInterview(selectedJobOpening,date,hour).iterator().hasNext()
+         UI -> CTRL : registerInterview(jobOpening,jobApplication, date, hour)
+         activate CTRL
+
+CTRL -> I : new Interview( jobApplicationId, jobOpening, date, hour)
+activate I
+
+I-->CTRL : interview
+deactivate I
+            CTRL -> IR : save(existingInterview)
+            activate IR
+
+
+         IR --> CTRL : interview
+            deactivate IR
+                    CTRL --> UI : interview
+                deactivate CTRL
+                end alt
+
+end alt
+
+
+     UI --> CM : display success of operation and the interview appointment just made
+
+          deactivate UI
+
+
+deactivate CM
+
+@enduml

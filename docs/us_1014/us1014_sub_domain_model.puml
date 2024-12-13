@@ -1,0 +1,167 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package "Job Opening Aggregate"{
+
+    class "«entity»\nRecruitmentProcess" as RecruitmentProcess{
+        HasInterviewPhase
+    }
+
+     class "«entity»\nPhase" as Phase{
+        phaseName
+        startDate
+        endDate
+     }
+
+    class "«value object»\nPhaseNames" as PhaseNames{
+
+    }
+
+
+ class "«entity»\nScreeningPhase" as ScreeningPhase{
+
+     }
+
+    class "«entity»\nResultPhase" as ResultPhase{
+    }
+
+    class "«entity»\nAnalysisPhase" as AnalysisPhase{
+
+    }
+
+    class "«root»\n«entity» \nJobOpening" as JobOpening{
+
+
+    }
+
+    class "«value object»\nJogOpeningState" as JogOpeningState {
+    }
+
+     class "«value object»\nContractType" as ContractType{
+     }
+
+    class "«value object»\nMode" as Mode{
+
+    }
+
+    class "«value object»\nJobFunction" as JobFunction{
+
+    }
+
+    class "«value object»\n NumberOfVacancies" as  NumberOfVacancies{
+
+    }
+
+    class "«value object»\nDescription" as Description{
+
+    }
+
+
+    class "«value object»\nAddress" as Address1{
+        Street
+        City
+        State
+        Country
+        Zipcode
+    }
+
+    class "«value object»\n«identifier»\nJobReference" as JobReference{
+    }
+
+    class  "«entity»\nInterviewPhase" as InterviewPhase{
+
+    }
+
+
+
+}
+
+package "Interview Aggregate"{
+
+class "«root»\n«entity»\nInterview" as Interview{
+}
+ class "«value object»\nInterviewSchedule" as InterviewSchedule{
+        date
+        hour
+    }
+}
+
+package "JobApplication Aggregate"{
+    class "«root»\n«entity»\nJobApplication" as JobApplication{
+
+    }
+    class "«value object»\nStatus" as Status{
+    }
+
+     class "«value object»\n«identifier»\nId" as ID{
+     }
+
+
+
+    class "«value object»\nCurriculum" as Curriculum{
+    }
+
+
+    class "«value object»\n«calculated»\nGrade" as Grade{}
+
+}
+
+package "Candidate Aggregate"{
+    class "«root»\n«entity»\nCandidate" as Candidate{
+
+    }
+
+    class "«value object»\nName" as Name2 {
+        firstName
+        lastName
+    }
+
+    class "«value object»\nPhoneNumber" as PhoneNumber{
+    }
+
+     class "«value object»\n«identifier»\nE-Mail" as EMail2{
+     }
+
+}
+
+Candidate "1" <-- "1" JobApplication :refers to
+Candidate "1"-->"1" EMail2 :identified by
+PhoneNumber "1"<-"1" Candidate :has
+Candidate --> Name2 : has
+
+JobApplication"1"-->"1" Curriculum : includes
+JobApplication"1"-->"1" ID : identified by
+JobApplication "1"-->"1" Status : ha
+
+JobOpening "1"-->"1" JogOpeningState : includes
+
+
+
+RecruitmentProcess "1" *--"4..5" Phase :part of
+RecruitmentProcess "1" -> "1" PhaseNames : includes
+JobOpening "1" --> "1"RecruitmentProcess :includes
+
+JobApplication --> "0..1" Grade : includes
+
+Mode "1" <-- "1"JobOpening : includes
+JobFunction "1" <-- "1"JobOpening : includes
+NumberOfVacancies "1" <-- "1"JobOpening : includes
+Description "1" <-- "1"JobOpening : includes
+Address1"1" <-- "1"JobOpening : includes
+ContractType "1" <--"1" JobOpening : includes
+JobOpening "1"-->"1" JobReference : identified by
+JobOpening "1"-->"1" JogOpeningState : includes
+JobOpening "1" --> "1"RecruitmentProcess :includes
+JobOpening "1"<--"*"JobApplication : refers to
+
+ResultPhase --|> Phase
+ScreeningPhase --|> Phase
+InterviewPhase --|> Phase
+AnalysisPhase --|> Phase
+
+
+InterviewSchedule "1" <-- "1" Interview
+Interview "1" --> "1" JobApplication
+Interview "1" -> "1" JobOpening
+
+@enduml

@@ -1,0 +1,128 @@
+@startuml
+
+title "US1000 - Add, List and Disable or Enable User of Backoffice" Class Diagram
+
+class AddUserUI{
++ showRoles(final Set<Role> roleTypes) : boolean
+}
+
+class AddUserController{
+- userSvc : UserManagementService
+
++ addUser(final String email, final String password,
+              final String firstName, final String lastName, final Set<Role> roles) : SystemUser
++ addUser(final String email, final String password, final String firstName,
+                                final String lastName, final Set<Role> roles, final Calendar createdOn) : SystemUser
++ getRoleTypes() : Role[]
++ generatePassword() : String
+
+'+putRequirement(JobOpening jobOpening, Plugin plugin)
+}
+
+
+class ListUsersUI{
+}
+
+class ListUsersController{
+- userSvc : UserManagementService
+
++filteredUsersOfBackOffice() : Iterable<SystemUser>
++allUsers() : Iterable<SystemUser>
++find(final Username u) : Optional<SystemUser>
+}
+
+
+
+class DeactivateUserUI{
+}
+
+class DeactivateUserController{
+
+- userSvc : UserManagementService
+
+
++ activeUsers() : Iterable<SystemUser>
++ deactiveUsers() : Iterable<SystemUser>
++ activateUser(final SystemUser user) : SystemUser
++ deactivateUser(final SystemUser user) : SystemUser
+
+}
+
+class UserManagementService{
+- userRepository : UserRepository
+- encoder : PasswordEncoder
+- policy : PasswordPolicy
+
++registerNewUser(final String username, final String rawPassword, final String firstName, \nfinal String lastName, final String email, final Set<Role> roles,
+final Calendar createdOn) : SystemUser
++registerNewUser(final String username, final String rawPassword, final String firstName,
+ final String lastName, final String email, final Set<Role> roles) : SystemUser
++ registerUser(final Username username, final Password password, final Name name,
+final EmailAddress email, final Set<Role> roles) : SystemUser
++ activeUsers() : Iterable<SystemUser>
++ deactivatedUsers() : Iterable<SystemUser>
++ activateUser(final SystemUser user) : SystemUser
++ deactivateUser(final SystemUser user) : SystemUser
++ allUsers() : Iterable<SystemUser>
+
+}
+
+class EmailAddress{
+-email : String
+
+}
+
+class Name{
+-firstName : String
+-lastName : String
++firstName() : String
++lastName() : String
+}
+
+class SystemUser{
+-name : Name
+-email : EmailAddress
+
++email() : EmailAddress
++name() : Name
+}
+
+class PersistenceContext{
++repositories()
+}
+
+interface RepositoryFactory{
+users()
+users(TransactionalContext tx)
+}
+
+interface UserRepository{
+findByActive(boolean active)
+save(SystemUser)
+}
+
+
+AddUserUI ..> AddUserController
+ListUsersUI ..> ListUsersController
+DeactivateUserUI ..> DeactivateUserController
+
+SystemUser --> EmailAddress
+
+PersistenceContext --> RepositoryFactory
+SystemUser --> Name
+
+
+
+AddUserController ..> UserManagementService
+ListUsersController ..> UserManagementService
+DeactivateUserController ..> UserManagementService
+
+UserManagementService ..> PersistenceContext
+
+UserManagementService ..> UserRepository
+
+
+RepositoryFactory ..> UserRepository
+UserRepository --> "*" SystemUser : stores
+
+@enduml

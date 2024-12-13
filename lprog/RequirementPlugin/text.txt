@@ -1,0 +1,10 @@
+# Enter the number of years of experience (integer)
+Experience-years(3): 3
+# Select one degree (None; Bachelor; Master; PhD)
+Academic-degree(Master): Master
+# Select one or more programming languages you are proficient in (java; javascript; python)
+Programming-languages(java, javascript): javascript, python, java
+# On a scale of 1 to 5 how would you rate your proficiency in Java?
+Answer(1-4): 2
+# How do you leverage your proficiency in multiple programming languages to solve complex problems? (Short Text Answer)
+Answer(Short Text Answer): Leveraging proficiency in multiple programming languages I choose the best-suited language for each task such as using Python for data analysis.

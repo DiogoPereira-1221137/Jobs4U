@@ -1,0 +1,98 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor Administrator as Actor
+participant ":DeactivateUserUI" as UI <<presentation>>
+control ":DeactivateUserController" as Controller <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant ":UserManagementService" as UserManagementService <<application>>
+participant "PersistenceContext" as Persistence <<persistence>>
+participant ":RepositoryFactory" as RepositoryFactory <<persistence>>
+participant ":UserRepository" as Repository <<repository>>
+
+
+activate Actor
+    Actor -> UI : Asks to activate a specific User
+        activate UI
+
+
+
+    UI-> Controller** : create
+
+     UI-> Controller : deactiveUsers()
+    activate Controller
+
+           Controller->AR : authorizationService()
+          activate AR
+          AR->AUTHS : create()
+
+
+         AR-->Controller : authz
+         deactivate AR
+
+        Controller -> UserManagementService: deactiveUsers()
+        activate UserManagementService
+
+
+
+            UserManagementService->Persistence:repositories()
+            activate Persistence
+            Persistence->RepositoryFactory:deactiveUsers()
+            activate RepositoryFactory
+            RepositoryFactory->Repository:create()
+            RepositoryFactory-->Persistence : userRepository
+            deactivate RepositoryFactory
+            Persistence-->UserManagementService : userRepository
+
+            deactivate Persistence
+
+            deactivate RepositoryFactory
+
+            UserManagementService->Repository: findByActive(false)
+            activate Repository
+            Repository-->UserManagementService: deactiveUsers
+            deactivate Repository
+
+
+            UserManagementService-->Controller: deactiveUsers
+            deactivate UserManagementService
+
+            Controller-->UI: deactiveUsers
+        deactivate Controller
+
+
+
+
+        UI-->Actor: Shows the list of deactivated user to choose one
+deactivate UI
+
+alt option != 0
+    Actor -> UI : Choose the User to activate
+activate UI
+     UI-> Controller : activateUser(user)
+         activate Controller
+         Controller -> UserManagementService: activateUser(user)
+         activate UserManagementService
+         UserManagementService -> UserManagementService: user.activate();
+         UserManagementService -> Repository: save(user)
+
+         UserManagementService --> Controller: user
+         deactivate UserManagementService
+
+         Controller --> UI: user
+         deactivate Controller
+
+         UI --> Actor: Show the information of the User and the success of the operation
+         deactivate UI
+end
+
+
+
+@enduml

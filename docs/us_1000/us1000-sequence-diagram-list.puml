@@ -1,0 +1,75 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+actor Administrator as Actor
+participant ":ListUserUI" as UI <<presentation>>
+control ":ListUserController" as Controller <<application>>
+participant "AuthzRegistry" as AR  <<application>>
+participant ":AuthorizationService" as AUTHS <<application>>
+participant ":UserManagementService" as Service <<application>>
+participant "PersistenceContext" as Persistence <<persistence>>
+participant ":RepositoryFactory" as RepositoryFactory <<persistence>>
+participant ":UserRepository" as Repository <<repository>>
+
+
+activate Actor
+    Actor -> UI : Asks to list all users of the backoffice
+        activate UI
+
+
+
+    UI-> Controller** : create
+
+     UI-> Controller : filteredUsersOfBackOffice()
+    activate Controller
+
+
+
+       Controller->AR : authorizationService()
+         activate AR
+         AR->AUTHS : create()
+
+
+        AR-->Controller : authz
+        deactivate AR
+
+
+
+       Controller -> Service: allUsers()
+       activate Service
+
+        Service->Persistence:repositories()
+        activate Persistence
+        Persistence->RepositoryFactory:deactiveUsers()
+        activate RepositoryFactory
+        RepositoryFactory->Repository:create()
+        RepositoryFactory-->Persistence : userRepository
+        deactivate RepositoryFactory
+        Persistence-->Service : userRepository
+
+        deactivate Persistence
+
+        deactivate RepositoryFactory
+
+        Service->Repository: findAll()
+        activate Repository
+        Repository-->Service: allUsers()
+        deactivate Repository
+
+        Service --> Controller: allUsers
+
+        deactivate Service
+
+        Controller-->UI: filteredUsers
+    deactivate Controller
+
+
+        UI-->Actor: Show the information of the Users of the backoffice
+deactivate UI
+@enduml

@@ -1,0 +1,132 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US 1020 - Publish the results of the selection of candidates for a job opening, so that candidates and customer are notified by email of the result." Sequence Diagram
+
+'hide footbox
+
+
+
+participant ":ClientHandler" as Server <<System>>
+'control ":ListJobOpeningServerController" as CTRL <<application>>
+'participant ":NotificationService" as Service <<domain>>
+participant ":Notification" as Notif <<domain>>
+'participant ":CustomerRepository" as customerRepository <<repository>>
+'participant ":JobOpeningRepository" as jobOpeningRepository <<repository>>
+participant ":NotificationRepository" as Repository <<repository>>
+participant ":SerializeUtil" as SerializeUtil <<domain>>
+participant ":SendEmail" as Sender <<domain>>
+
+-> Server : (tcp) sendPublishReq
+
+ Server->Server : sendPublishReq(version, code, data)
+ activate Server
+
+
+ Server -> SerializeUtil: deserializeList(data.get(0))
+
+
+     activate SerializeUtil
+
+      SerializeUtil --> Server: publishList
+
+     deactivate SerializeUtil
+
+
+ Server -> SerializeUtil: deserializeObject(data.get(1))
+
+
+     activate SerializeUtil
+
+      SerializeUtil --> Server: vacancies
+
+     deactivate SerializeUtil
+
+  Server -> SerializeUtil: deserializeObject(data.get(2))
+
+
+      activate SerializeUtil
+
+       SerializeUtil --> Server: companyEmail
+
+      deactivate SerializeUtil
+
+ Server -> SerializeUtil: deserializeObject(data.get(3))
+
+
+     activate SerializeUtil
+
+      SerializeUtil --> Server: publisherEmail
+
+     deactivate SerializeUtil
+
+
+     Server -> Server: jobOffer = publishList.get(0).companyName
+
+     loop for each JobApplicationDTO job in publishList
+
+
+     Server -> Notif: new Notification(publisherEmail,job.candidateEmail())
+     activate Notif
+
+      Notif --> Server: publish
+     deactivate Notif
+
+      Server -> Server: publish.approvadeCandidate(job.candidateName(),jobOffer,placed,vacancies)
+
+      Server -> Sender: sendEmail(publish.senderEmail().toString(), publish.receiverEmail().toString(), publish.emailFormat())
+
+      activate Sender
+
+      Sender --> Server : success
+
+      deactivate Sender
+
+      Server -> Repository: save(publish)
+
+
+     end
+
+     alt success == true
+
+         Server -> Notif: new Notification(publisherEmail, companyEmail)
+          activate Notif
+
+           Notif --> Server: customerNotify
+          deactivate Notif
+
+           Server -> Server: customerNotify.customerPublishedInfo(publishList, positions)
+
+           Server -> Sender: sendEmail(customerNotify.senderEmail().toString(), customerNotify.receiverEmail().toString(), customerNotify.emailFormat())
+
+           activate Sender
+
+           Sender --> Server : success
+
+           deactivate Sender
+
+           Server -> Repository: save(customerNotify)
+
+     end
+
+
+
+
+
+ Server->Server : howMuchJobAppResp(version, code, jobApplicationsData)
+ deactivate Server
+
+
+
+
+ <-- Server: (tcp) sendPublishResp
+deactivate Server
+
+
+
+
+@enduml

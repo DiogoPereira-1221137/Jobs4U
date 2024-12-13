@@ -1,0 +1,74 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+title "US2000b - As Operator, I want to enable/disable a candidate.
+'hide footbox
+actor "Operator" as CM
+participant ":EnableDisableCandidateUI" as UI <<presentation>>
+control ":EnableDisableCandidateController" as CTRL <<application>>
+participant ":UserManagementService" as UserManagementService <<application>>
+participant ":UserRepository" as Repository <<repository>>
+
+
+activate CM
+
+    CM -> UI : asks to disable a candidate's access to the system
+
+    activate UI
+
+        UI -> CTRL** : create
+
+
+        UI -> CTRL : allActiveCandidates()
+    activate CTRL
+
+    CTRL -> UserManagementService : allActiveCandidates()
+    activate UserManagementService
+UserManagementService->Repository: activeUsers(true)
+            activate Repository
+            Repository-->UserManagementService: users
+            deactivate Repository
+            CTRL -> CTRL : filterCandidates(users)
+    UserManagementService --> CTRL :candidates
+    deactivate UserManagementService
+
+            CTRL --> UI : candidates
+        deactivate CTRL
+
+
+
+
+        UI --> CM : shows list of all the active candidates and asks to select one
+
+    deactivate UI
+
+    CM -> UI : selects a candidate
+    activate UI
+
+UI-> CTRL : deactivateUser(user)
+         activate CTRL
+         CTRL -> UserManagementService: deactivateUser(user)
+         activate UserManagementService
+         UserManagementService -> UserManagementService: user.deactivate(CurrentTime);
+         UserManagementService -> Repository: save(user)
+
+         UserManagementService --> CTRL: success
+         deactivate UserManagementService
+
+         CTRL --> UI: success
+         deactivate CTRL
+
+        UI --> CM : success
+
+    deactivate UI
+
+
+
+    deactivate UI
+deactivate CM
+
+@enduml

@@ -1,0 +1,53 @@
+@startuml
+
+skinparam shadowing false
+
+'left to right direction
+
+
+package "Customer Aggregate"{
+    class "«entity»\n«root»\nCustomer" as Customer{
+
+    }
+
+class SystemUser{
+}
+
+    class "Name" as Name1 {
+        firstName
+        lastName
+    }
+     class "«value object»\nE-Mail" as EMail1{
+     }
+
+     class "«value object»\nAddress" as Address2{
+            Street
+            City
+            State
+            Country
+            Zipcode
+     }
+
+     class "«value object»\nCode" as Code{
+     }
+
+}
+
+class UserDomain{}
+
+
+
+
+
+Customer "1"-->"1" EMail1 : has an
+
+Customer "1"..>"1" UserDomain
+
+Address2 <-- Customer : has an
+
+Customer --> Code : identified by
+
+Customer --> Name1 : has
+Customer --> SystemUser : managed by
+
+@enduml

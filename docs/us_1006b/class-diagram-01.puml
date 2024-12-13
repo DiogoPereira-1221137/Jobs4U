@@ -1,0 +1,42 @@
+@startuml
+
+title "US1006-Display all the personal data of a candidate" Class Diagram
+
+class PhoneNumber{
+}
+
+class Candidate{
+name : String
+email : Email
+
+getName()
+}
+
+class EMail{
+}
+
+class JobApplication{
+
+}
+
+
+class DisplayCandidateDataUI{}
+
+class DisplayCandidateDataController{}
+
+class CandidateRepository{}
+class JobApplicationRepository{}
+
+
+Candidate --> EMail
+Candidate --> PhoneNumber
+
+DisplayCandidateDataUI ..> DisplayCandidateDataController
+
+DisplayCandidateDataController ..> CandidateRepository
+DisplayCandidateDataController ..> JobApplicationRepository
+
+CandidateRepository --> "*" Candidate :stores
+JobApplicationRepository --> "*" JobApplication :stores
+JobApplication -> "1" Candidate : made for
+@enduml
